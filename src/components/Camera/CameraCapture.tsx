@@ -43,83 +43,74 @@ export const CameraCapture: React.FC = () => {
         }
     };
 
+    // Ícones para os botões
+    const icons = {
+        capture: <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.22c0 4.6-3.73 8.38-8.33 8.38-4.6 0-8.33-3.78-8.33-8.38s3.73-8.38 8.33-8.38c4.6 0 8.33 3.78 8.33 8.38z"/><path d="M2 12h3m14 0h3"/><path d="m19.07 4.93-2.12 2.12M7.05 16.95l-2.12 2.12m14.14 0-2.12-2.12M7.05 7.05 4.93 4.93"/></svg>,
+        retake: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
+    };
+
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                        Captura Facial
-                    </h2>
-
-                    {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                            {error}
-                        </div>
-                    )}
-
-                    {!isActive && !capturedImage && (
-                        <div className="text-center">
-                            <button
-                                onClick={startCamera}
-                                className="bg-[#00C4B4] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#00B5A5] transition-colors"
-                            >
-                                Iniciar Câmera
-                            </button>
-                        </div>
-                    )}
-
-                    {isActive && (
-                        <div style={{ position: 'relative', width: '100%', maxWidth: '512px', margin: '0 auto' }}>
-                            <video
-                                ref={videoRef}
-                                autoPlay
-                                playsInline
-                                muted
-                                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-                            />
-                            <div style={{
-                                position: 'absolute',
-                                bottom: '20px',
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                zIndex: 10
-                            }}>
-                                <button
-                                    onClick={handleCapture}
-                                    className="bg-white w-20 h-20 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-200 transition-colors border-4 border-[#00C4B4]"
-                                    aria-label="Capturar Imagem"
-                                >
-                                    <div className="w-16 h-16 bg-[#00C4B4] rounded-full"></div>
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {capturedImage && !isActive && (
-                        <div className="space-y-4 mt-4">
-                            <img
-                                src={capturedImage}
-                                alt="Imagem Capturada"
-                                className="w-full h-auto rounded-lg"
-                            />
-                            <div className="flex justify-center space-x-4">
-                                <button
-                                    onClick={handleRetake}
-                                    className="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors"
-                                >
-                                    Repetir Captura
-                                </button>
-                                <button
-                                    onClick={handleAnalyze}
-                                    className="bg-[#00C4B4] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#00B5A5] transition-colors"
-                                >
-                                    Analisar Imagem
-                                </button>
-                            </div>
-                        </div>
-                    )}
+        <div className="w-full h-full bg-black">
+            {!isActive && !capturedImage && (
+                <div className="flex flex-col items-center justify-center h-full text-white">
+                     <h2 className="text-2xl font-bold mb-6">Captura Facial</h2>
+                    <button
+                        onClick={startCamera}
+                        className="bg-[#00C4B4] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#00B5A5] transition-colors"
+                    >
+                        Iniciar Câmera
+                    </button>
                 </div>
-            </div>
+            )}
+
+            {isActive && (
+                <div className="relative w-full h-full flex items-center justify-center">
+                    <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover"
+                    />
+                    {/* Overlay com a guia oval */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg mb-4">
+                            Posicione o rosto dentro do oval
+                        </div>
+                        <div 
+                            className="w-[70vw] h-[60vh] max-w-sm max-h-96 border-4 border-dashed border-[#00C4B4] rounded-[50%]"
+                        ></div>
+                    </div>
+                     {/* Botão de Captura */}
+                    <div className="absolute bottom-24 flex items-center justify-center w-full">
+                         <button
+                            onClick={handleCapture}
+                            className="w-20 h-20 bg-[#00C4B4] rounded-full flex items-center justify-center shadow-lg"
+                            aria-label="Capturar Imagem"
+                        >
+                           {icons.capture}
+                        </button>
+                    </div>
+                </div>
+            )}
+            
+            {capturedImage && !isActive && (
+                <div className="relative w-full h-full flex items-center justify-center">
+                    <img
+                        src={capturedImage}
+                        alt="Imagem Capturada"
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-24 flex items-center justify-center w-full space-x-8">
+                        <button onClick={handleRetake} className="w-16 h-16 bg-white bg-opacity-70 text-black rounded-full flex items-center justify-center shadow-lg" aria-label="Repetir Captura">
+                            {icons.retake}
+                        </button>
+                        <button onClick={handleAnalyze} className="bg-[#00C4B4] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg">
+                            Analisar
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
