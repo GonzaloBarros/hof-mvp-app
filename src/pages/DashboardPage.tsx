@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
-import { useAuth } from '../context/AuthContext'; // 1. Importar o hook de autenticação
+import { useAuth } from '../context/AuthContext';
 
 // Componente para os cartões de ação principais
 const ActionButton = ({ to, icon, label }: { to: string, icon: React.ReactNode, label: string }) => (
@@ -39,7 +39,7 @@ const InfoCard = ({ title, children, onSearchChange }: { title: string, children
 
 export const DashboardPage: React.FC = () => {
     const { patients } = usePatients();
-    const { user } = useAuth(); // 2. Obter os dados do utilizador logado
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredPatients = patients
@@ -64,21 +64,11 @@ export const DashboardPage: React.FC = () => {
 
     return (
         <div className="p-6 bg-gray-50 min-h-full">
-            <div className="mb-6">
-                <img
-                    src="/Logo Medanalis.png"
-                    alt="Logo Medanalis"
-                    className="h-7 w-auto" 
-                />
-            </div>
-
             <header className="flex justify-between items-center mb-8">
                 <div>
-                    {/* 3. Mostrar o nome do utilizador */}
                     <h1 className="text-3xl font-bold text-gray-800">Olá, {user?.name || 'Dr.'}</h1>
                     <p className="text-gray-500 capitalize">{currentDate}</p>
                 </div>
-                {/* 4. Mostrar a foto de perfil do utilizador */}
                 <img
                     src={user?.profilePic || `https://placehold.co/60x60/E8F5F4/1A3C5E?text=${user?.name?.charAt(0) || 'M'}`}
                     alt="Foto do perfil"
@@ -97,7 +87,7 @@ export const DashboardPage: React.FC = () => {
                     <p className="text-gray-400 text-center py-4">Nenhuma consulta para hoje</p>
                 </InfoCard>
                 <InfoCard title="Pacientes" onSearchChange={setSearchTerm}>
-                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
                         {filteredPatients.length > 0 ? (
                             filteredPatients.map(patient => (
                                 <Link to={`/patient/${patient.id}`} key={patient.id} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-50">
@@ -117,10 +107,20 @@ export const DashboardPage: React.FC = () => {
                         ) : (
                             <p className="text-gray-400 text-center py-4">Nenhum paciente encontrado</p>
                         )}
+                        {/* Conteúdo de teste para forçar o scroll */}
+                        {[...Array(15)].map((_, i) => (
+                             <div key={i} className="flex items-center space-x-4 p-2 rounded-lg">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+                                <div className="space-y-2">
+                                    <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+                                    <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </InfoCard>
             </section>
         </div>
     );
 };
-   
+    

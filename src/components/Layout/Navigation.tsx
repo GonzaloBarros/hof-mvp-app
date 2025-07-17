@@ -41,8 +41,8 @@ export const Navigation: React.FC = () => {
                 ></div>
             )}
 
-            {/* Menu Flutuante */}
-            <div className="fixed bottom-24 right-6 z-40 flex flex-col items-end space-y-4">
+            {/* Menu Flutuante e Botão Principal */}
+            <div className={`fixed bottom-24 right-6 z-40 flex flex-col items-end space-y-4 transition-all duration-300 ${scrollDirection === 'down' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
                 {isFabMenuOpen && (
                     <div className="flex flex-col items-end space-y-4">
                         <div className="flex items-center space-x-3">
@@ -60,7 +60,6 @@ export const Navigation: React.FC = () => {
                     </div>
                 )}
                 
-                {/* Botão Principal Flutuante */}
                 <button 
                     onClick={() => setIsFabMenuOpen(!isFabMenuOpen)}
                     className={`w-16 h-16 bg-[#00C4B4] rounded-full flex items-center justify-center text-white shadow-2xl transform transition-transform duration-300 ${isFabMenuOpen ? 'rotate-45' : 'rotate-0'}`}

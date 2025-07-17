@@ -14,6 +14,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { LoginPage } from './pages/LoginPage';
 import { PatientDetailPage } from './pages/PatientDetailPage';
 import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
+import { AskAiPage } from './pages/AskAiPage'; // Importar a nova página
 
 const ReportsPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Página de Relatórios</h1></div>;
 
@@ -50,15 +51,26 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       case '/reports':
         title = "Relatórios";
         break;
+      case '/ask-ai':
+        title = "Pergunte para IA";
+        break;
       default:
         title = "";
     }
   }
   
+  if (location.pathname === '/register' || location.pathname === '/login') {
+    return <>{children}</>;
+  }
+
+  if (location.pathname === '/') {
+     return <div className="bg-gray-50 min-h-screen pb-24"><main>{children}</main><Navigation /></div>;
+  }
+
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
         <Header title={title} />
-        <main>{children}</main>
+        <main className="h-[calc(100vh-128px)]">{children}</main> {/* Ajuste para a página de IA ocupar o espaço */}
         <Navigation />
     </div>
   )
@@ -87,6 +99,7 @@ function App() {
                           <Route path="/patients" element={<PatientsPage />} />
                           <Route path="/patient/:id" element={<PatientDetailPage />} />
                           <Route path="/reports" element={<ReportsPage />} />
+                          <Route path="/ask-ai" element={<AskAiPage />} /> {/* Nova rota */}
                           <Route path="*" element={<Navigate to="/" />} />
                         </Routes>
                       </MainLayout>

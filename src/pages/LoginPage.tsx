@@ -5,23 +5,18 @@ import { useAuth } from '../context/AuthContext';
 export const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, user } = useAuth(); // Usar a função de login
+    const { login, user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Tenta obter a página de onde o utilizador veio, para o redirecionar de volta após o login
     const from = location.state?.from?.pathname || "/";
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // **Lógica de Login Simulada**
-        // No mundo real, aqui iríamos verificar o email e a senha num servidor.
-        // Por agora, vamos assumir que o login é sempre bem-sucedido
-        // e vamos logar o utilizador com os dados que já temos guardados (do registo).
         
         // Para a simulação, vamos criar dados de exemplo caso não haja nenhum utilizador
         const mockUser = {
-            name: "Dr. Exemplo",
+            name: "Dr. Leandro", // Nome de exemplo atualizado
             email: "exemplo@medsense.com",
             cro: "12345",
             phone: "912345678",
@@ -30,16 +25,16 @@ export const LoginPage: React.FC = () => {
             profilePic: null,
         };
 
-        login(user || mockUser); // Loga o utilizador existente ou um de exemplo
-        navigate(from, { replace: true }); // Redireciona para a página de onde veio ou para o Dashboard
+        login(user || mockUser);
+        navigate(from, { replace: true });
     };
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-                <h1 className="text-4xl font-bold text-[#00C4B4]">MedSense</h1>
+                <h1 className="text-4xl font-bold text-[#00C4B4]">Medanalis</h1>
                 <h2 className="mt-2 text-xl text-gray-600">
-                    Harmonização Orofacial Inteligente
+                    Análise Avançada. Resultados Precisos.
                 </h2>
             </div>
             
