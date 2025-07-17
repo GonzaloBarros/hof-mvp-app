@@ -8,7 +8,7 @@ import { generatePdf } from '../../utils/reportGenerator';
 
 export const SkinAnalysis: React.FC = () => {
     const { capturedImage } = useImage();
-    const { patients } = usePatients();
+    const { patients, updatePatientProfilePic } = usePatients(); // Obter a lista de pacientes e a função de atualização
     const { addAnalysis } = useAnalyses();
     const navigate = useNavigate();
 
@@ -49,9 +49,17 @@ export const SkinAnalysis: React.FC = () => {
             return;
         }
         if (analysisResult && capturedImage) {
+            const patient = patients.find(p => p.id === selectedPatientId);
+
             addAnalysis(analysisResult, selectedPatientId, capturedImage);
+
+            // Se o paciente não tiver foto de perfil, define esta como a foto de perfil
+            if (patient && !patient.profilePic) {
+                updatePatientProfilePic(patient.id, capturedImage);
+            }
+
             alert('Análise guardada com sucesso!');
-            navigate('/patients'); // Navega para a lista de pacientes após guardar
+            navigate('/patients');
         }
     };
 

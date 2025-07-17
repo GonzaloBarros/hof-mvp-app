@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Header } from './components/Layout/Header';
 import { Navigation } from './components/Layout/Navigation';
 import { CameraCapture } from './components/Camera/CameraCapture';
@@ -7,22 +7,31 @@ import { SkinAnalysis } from './components/Analysis/SkinAnalysis';
 import { ImageProvider } from './context/ImageContext';
 import { PatientProvider } from './context/PatientContext';
 import { AnalysisProvider } from './context/AnalysisContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { PatientsPage } from './pages/PatientsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { LoginPage } from './pages/LoginPage';
 import { PatientDetailPage } from './pages/PatientDetailPage';
-import { AnalysisDetailPage } from './pages/AnalysisDetailPage'; // Importar a nova página
+import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
 
-// Página de exemplo
 const ReportsPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Página de Relatórios</h1></div>;
 
-// Componente para gerir o layout principal
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated } = useAuth();
+    const location = useLocation();
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    return <>{children}</>;
+};
+
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  let title = "Dashboard";
+  let title = "";
 
-  // Lógica para definir o título do cabeçalho com base na rota
   if (location.pathname.startsWith('/patient/')) {
     title = "Detalhes do Paciente";
   } else if (location.pathname.startsWith('/analysis/')) {
@@ -42,19 +51,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         title = "Relatórios";
         break;
       default:
-        title = "Dashboard";
+        title = "";
     }
   }
   
-  // Não mostra o Header e a Navegação em certas páginas
-  if (location.pathname === '/register' || location.pathname === '/login') {
-    return <>{children}</>;
-  }
-
-  if (location.pathname === '/') {
-     return <div className="bg-gray-50 min-h-screen pb-24"><main>{children}</main><Navigation /></div>;
-  }
-
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
         <Header title={title} />
@@ -66,27 +66,39 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <AnalysisProvider>
-      <PatientProvider>
-        <ImageProvider>
-          <BrowserRouter>
-            <MainLayout>
+    <AuthProvider>
+      <AnalysisProvider>
+        <PatientProvider>
+          <ImageProvider>
+            <BrowserRouter>
               <Routes>
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/camera" element={<CameraCapture />} />
-                <Route path="/analysis" element={<SkinAnalysis />} />
-                <Route path="/analysis/:id" element={<AnalysisDetailPage />} /> {/* Nova rota */}
-                <Route path="/patients" element={<PatientsPage />} />
-                <Route path="/patient/:id" element={<PatientDetailPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route
+                  path="/*"
+                  element={
+                    <ProtectedRoute>
+                      <MainLayout>
+                        <Routes>
+                          <Route path="/" element={<DashboardPage />} />
+                          <Route path="/camera" element={<CameraCapture />} />
+                          <Route path="/analysis" element={<SkinAnalysis />} />
+                          <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
+                          <Route path="/patients" element={<PatientsPage />} />
+                          <Route path="/patient/:id" element={<PatientDetailPage />} />
+                          <Route path="/reports" element={<ReportsPage />} />
+                          <Route path="*" element={<Navigate to="/" />} />
+                        </Routes>
+                      </MainLayout>
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
-            </MainLayout>
-          </BrowserRouter>
-        </ImageProvider>
-      </PatientProvider>
-    </AnalysisProvider>
+            </BrowserRouter>
+          </ImageProvider>
+        </PatientProvider>
+      </AnalysisProvider>
+    </AuthProvider>
   );
 }
 

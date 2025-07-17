@@ -40,7 +40,6 @@ export const DashboardPage: React.FC = () => {
     const { patients } = usePatients();
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Inverte a lista para mostrar os mais recentes primeiro e depois filtra pela pesquisa
     const filteredPatients = patients
         .slice()
         .reverse()
@@ -63,14 +62,6 @@ export const DashboardPage: React.FC = () => {
 
     return (
         <div className="p-6 bg-gray-50 min-h-full">
-            <div className="mb-6">
-                <img
-                    src="/Logo Medanalis.png" // Caminho corrigido para o ficheiro local
-                    alt="Logo Medanalis"
-                    className="h-7 w-auto" 
-                />
-            </div>
-
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800">Olá, Dr.</h1>
@@ -99,9 +90,9 @@ export const DashboardPage: React.FC = () => {
                             filteredPatients.map(patient => (
                                 <Link to={`/patient/${patient.id}`} key={patient.id} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-50">
                                     <img 
-                                        src={`https://placehold.co/40x40/E8F5F4/1A3C5E?text=${patient.name.charAt(0)}`}
+                                        src={patient.profilePic || `https://placehold.co/40x40/E8F5F4/1A3C5E?text=${patient.name.charAt(0)}`}
                                         alt="Foto do Paciente" 
-                                        className="w-10 h-10 rounded-full"
+                                        className="w-10 h-10 rounded-full object-cover"
                                     />
                                     <div>
                                         <p className="font-bold text-gray-800">{patient.name}</p>
@@ -120,3 +111,4 @@ export const DashboardPage: React.FC = () => {
         </div>
     );
 };
+    

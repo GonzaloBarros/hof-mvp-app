@@ -3,14 +3,14 @@ import { Patient } from '../types/patient';
 
 interface PatientContextType {
     patients: Patient[];
-    addPatient: (patient: Omit<Patient, 'id' | 'createdAt'>) => void;
+    addPatient: (patient: Omit<Patient, 'id' | 'createdAt' | 'profilePic'>) => void;
+    updatePatientProfilePic: (patientId: string, profilePic: string) => void; // Nova função
 }
 
 const PatientContext = createContext<PatientContextType | undefined>(undefined);
 
 export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [patients, setPatients] = useState<Patient[]>(() => {
-        // Carrega os pacientes do localStorage ao iniciar
         try {
             const savedPatients = localStorage.getItem('patients');
             return savedPatients ? JSON.parse(savedPatients) : [];
@@ -21,7 +21,6 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
 
     useEffect(() => {
-        // Salva os pacientes no localStorage sempre que a lista muda
         try {
             localStorage.setItem('patients', JSON.stringify(patients));
         } catch (error) {
@@ -29,17 +28,26 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
     }, [patients]);
 
-    const addPatient = (patientData: Omit<Patient, 'id' | 'createdAt'>) => {
+    const addPatient = (patientData: Omit<Patient, 'id' | 'createdAt' | 'profilePic'>) => {
         const newPatient: Patient = {
-            id: new Date().toISOString(), // ID simples para o MVP
+            id: new Date().toISOString(),
             createdAt: new Date().toISOString(),
+            profilePic: null, // Pacientes começam sem foto
             ...patientData,
         };
         setPatients(prevPatients => [...prevPatients, newPatient]);
     };
 
+    const updatePatientProfilePic = (patientId: string, profilePic: string) => {
+        setPatients(prevPatients =>
+            prevPatients.map(patient =>
+                patient.id === patientId ? { ...patient, profilePic } : patient
+            )
+        );
+    };
+
     return (
-        <PatientContext.Provider value={{ patients, addPatient }}>
+        <PatientContext.Provider value={{ patients, addPatient, updatePatientProfilePic }}>
             {children}
         </PatientContext.Provider>
     );

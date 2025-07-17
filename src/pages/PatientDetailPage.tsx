@@ -9,7 +9,12 @@ export const PatientDetailPage: React.FC = () => {
     const { analyses } = useAnalyses();
 
     const patient = patients.find(p => p.id === id);
-    const patientAnalyses = analyses.filter(a => a.patientId === id);
+    const patientAnalyses = analyses.filter(a => a.patientId === id).reverse(); // .reverse() para mostrar as mais recentes primeiro
+
+    // Lógica melhorada para a foto de perfil:
+    // Usa a foto de perfil guardada, ou, se não existir, usa a foto da análise mais recente.
+    const displayProfilePic = patient?.profilePic || (patientAnalyses.length > 0 ? patientAnalyses[0].image : null);
+
 
     if (!patient) {
         return (
@@ -25,9 +30,16 @@ export const PatientDetailPage: React.FC = () => {
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
             {/* Cabeçalho com os dados do paciente */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">{patient.name}</h1>
-                <p className="text-gray-500">{patient.age} anos</p>
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-8 flex items-center space-x-6">
+                <img
+                    src={displayProfilePic || `https://placehold.co/80x80/E8F5F4/1A3C5E?text=${patient.name.charAt(0)}`}
+                    alt="Foto do Paciente"
+                    className="w-20 h-20 rounded-full object-cover border-2 border-[#00C4B4]"
+                />
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800">{patient.name}</h1>
+                    <p className="text-gray-500">{patient.age} anos</p>
+                </div>
             </div>
 
             {/* Histórico de Análises */}
@@ -45,7 +57,6 @@ export const PatientDetailPage: React.FC = () => {
                                             {new Date(analysis.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })}
                                         </p>
                                         
-                                        {/* Nova seção para o resumo da análise */}
                                         <div className="border-t border-gray-200 pt-3 mt-auto text-xs space-y-1">
                                             <div className="flex justify-between"><span>Rugas:</span> <span className="font-bold">{analysis.skinProblems.wrinkles.severity}</span></div>
                                             <div className="flex justify-between"><span>Manchas:</span> <span className="font-bold">{analysis.skinProblems.darkSpots.severity}</span></div>
