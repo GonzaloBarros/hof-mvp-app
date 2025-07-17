@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useScrollDirection } from '../../hooks/useScrollDirection';
 
 // Componente de Ícone para reutilização
 const NavIcon = ({ children, isActive }: { children: React.ReactNode, isActive: boolean }) => (
@@ -8,8 +9,19 @@ const NavIcon = ({ children, isActive }: { children: React.ReactNode, isActive: 
     </div>
 );
 
+// Ícones para o menu flutuante
+const fabIcons = {
+    plus: <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+    close: <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+    camera: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
+    patient: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>,
+    text: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/></svg>
+};
+
 export const Navigation: React.FC = () => {
     const location = useLocation();
+    const scrollDirection = useScrollDirection();
+    const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
 
     const navItems = [
         { path: '/', label: 'Painel', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
@@ -20,27 +32,66 @@ export const Navigation: React.FC = () => {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-t-lg z-20">
-            <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-                <div className="flex justify-around py-1">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`flex flex-col items-center justify-center text-center w-20 h-16 rounded-lg transition-colors ${
-                                location.pathname === item.path
-                                    ? 'text-[#00C4B4] bg-[#E8F5F4]'
-                                    : 'text-gray-500 hover:text-[#00C4B4] hover:bg-gray-50'
-                            }`}
-                        >
-                            <NavIcon isActive={location.pathname === item.path}>
-                                {item.icon}
-                            </NavIcon>
-                            <span className="text-xs font-medium">{item.label}</span>
-                        </Link>
-                    ))}
-                </div>
+        <>
+            {/* Overlay que escurece a tela */}
+            {isFabMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-white bg-opacity-80 z-30"
+                    onClick={() => setIsFabMenuOpen(false)}
+                ></div>
+            )}
+
+            {/* Menu Flutuante */}
+            <div className="fixed bottom-24 right-6 z-40 flex flex-col items-end space-y-4">
+                {isFabMenuOpen && (
+                    <div className="flex flex-col items-end space-y-4">
+                        <div className="flex items-center space-x-3">
+                            <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Nova Análise</span>
+                            <Link to="/camera" onClick={() => setIsFabMenuOpen(false)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.camera}</Link>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Novo Paciente</span>
+                            <Link to="/patients" onClick={() => setIsFabMenuOpen(false)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.patient}</Link>
+                        </div>
+                         <div className="flex items-center space-x-3">
+                            <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Publicar</span>
+                            <button className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.text}</button>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Botão Principal Flutuante */}
+                <button 
+                    onClick={() => setIsFabMenuOpen(!isFabMenuOpen)}
+                    className={`w-16 h-16 bg-[#00C4B4] rounded-full flex items-center justify-center text-white shadow-2xl transform transition-transform duration-300 ${isFabMenuOpen ? 'rotate-45' : 'rotate-0'}`}
+                >
+                    {isFabMenuOpen ? fabIcons.close : fabIcons.plus}
+                </button>
             </div>
-        </nav>
+
+            {/* Barra de Navegação Inferior */}
+            <nav className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-t-lg z-20 transition-transform duration-300 ${scrollDirection === 'down' && !isFabMenuOpen ? 'translate-y-full' : 'translate-y-0'}`}>
+                <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                    <div className="flex justify-around py-1">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={`flex flex-col items-center justify-center text-center w-20 h-16 rounded-lg transition-colors ${
+                                    location.pathname === item.path
+                                        ? 'text-[#00C4B4] bg-[#E8F5F4]'
+                                        : 'text-gray-500 hover:text-[#00C4B4] hover:bg-gray-50'
+                                }`}
+                            >
+                                <NavIcon isActive={location.pathname === item.path}>
+                                    {item.icon}
+                                </NavIcon>
+                                <span className="text-xs font-medium">{item.label}</span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </nav>
+        </>
     );
 };
