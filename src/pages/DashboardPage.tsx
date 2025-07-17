@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
+import { useAuth } from '../context/AuthContext'; // 1. Importar o hook de autenticação
 
 // Componente para os cartões de ação principais
 const ActionButton = ({ to, icon, label }: { to: string, icon: React.ReactNode, label: string }) => (
@@ -38,6 +39,7 @@ const InfoCard = ({ title, children, onSearchChange }: { title: string, children
 
 export const DashboardPage: React.FC = () => {
     const { patients } = usePatients();
+    const { user } = useAuth(); // 2. Obter os dados do utilizador logado
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredPatients = patients
@@ -62,15 +64,25 @@ export const DashboardPage: React.FC = () => {
 
     return (
         <div className="p-6 bg-gray-50 min-h-full">
+            <div className="mb-6">
+                <img
+                    src="/Logo Medanalis.png"
+                    alt="Logo Medanalis"
+                    className="h-7 w-auto" 
+                />
+            </div>
+
             <header className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Olá, Dr.</h1>
+                    {/* 3. Mostrar o nome do utilizador */}
+                    <h1 className="text-3xl font-bold text-gray-800">Olá, {user?.name || 'Dr.'}</h1>
                     <p className="text-gray-500 capitalize">{currentDate}</p>
                 </div>
+                {/* 4. Mostrar a foto de perfil do utilizador */}
                 <img
-                    src="https://placehold.co/60x60/E8F5F4/1A3C5E?text=G"
+                    src={user?.profilePic || `https://placehold.co/60x60/E8F5F4/1A3C5E?text=${user?.name?.charAt(0) || 'M'}`}
                     alt="Foto do perfil"
-                    className="w-14 h-14 rounded-full border-2 border-[#00C4B4]"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-[#00C4B4]"
                 />
             </header>
 
@@ -111,4 +123,4 @@ export const DashboardPage: React.FC = () => {
         </div>
     );
 };
-    
+   

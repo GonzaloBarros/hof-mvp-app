@@ -12,16 +12,27 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     
-    <!-- Script do Tailwind CDN. Carrega todos os estilos necessários. -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Nova Animação de Rotação -->
+    <style>
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .animate-spin-slow {
+        animation: spin 15s linear infinite;
+      }
+    </style>
     
     <title>HOF App</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      O React vai injetar a nossa aplicação inteira dentro desta div com id="root".
-    -->
   </body>
 </html>

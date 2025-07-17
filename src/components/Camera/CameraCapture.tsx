@@ -3,6 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useCamera } from '../../hooks/useCamera';
 import { useImage } from '../../context/ImageContext';
 
+// Componente para a guia oval animada
+const FaceOutline = () => (
+    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+        <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg mb-4 shadow-lg">
+            Posicione o rosto dentro do oval
+        </div>
+        <div 
+            className="w-[70vw] h-[60vh] max-w-sm max-h-96 border-4 border-dashed border-[#00C4B4] rounded-[50%] animate-spin-slow"
+        ></div>
+    </div>
+);
+
 export const CameraCapture: React.FC = () => {
     const { stream, isActive, error, startCamera, stopCamera, captureImage } = useCamera();
     const { capturedImage, setCapturedImage } = useImage();
@@ -27,19 +39,19 @@ export const CameraCapture: React.FC = () => {
     const handleCapture = () => {
         const imageData = captureImage(videoRef);
         if (imageData) {
-            setCapturedImage(imageData); // Guarda a imagem no contexto global
+            setCapturedImage(imageData);
             stopCamera();
         }
     };
 
     const handleRetake = () => {
         setCapturedImage(null);
-        startCamera();
+        // Não iniciamos a câmara aqui, voltamos ao ecrã inicial
     };
 
     const handleAnalyze = () => {
         if (capturedImage) {
-            navigate('/analysis'); // Navega para a página de análise
+            navigate('/analysis');
         }
     };
 
@@ -50,58 +62,25 @@ export const CameraCapture: React.FC = () => {
     };
 
     return (
-        <div className="w-full h-full bg-black">
-            {!isActive && !capturedImage && (
-                <div className="flex flex-col items-center justify-center h-full text-white">
-                     <h2 className="text-2xl font-bold mb-6">Captura Facial</h2>
-                    <button
-                        onClick={startCamera}
-                        className="bg-[#00C4B4] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#00B5A5] transition-colors"
-                    >
-                        Iniciar Câmera
-                    </button>
-                </div>
-            )}
-
+        <div className="w-full h-full bg-gray-800 text-white">
+            {/* Estado: Câmara Ativa */}
             {isActive && (
                 <div className="relative w-full h-full flex items-center justify-center">
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full h-full object-cover"
-                    />
-                    {/* Overlay com a guia oval */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg mb-4">
-                            Posicione o rosto dentro do oval
-                        </div>
-                        <div 
-                            className="w-[70vw] h-[60vh] max-w-sm max-h-96 border-4 border-dashed border-[#00C4B4] rounded-[50%]"
-                        ></div>
-                    </div>
-                     {/* Botão de Captura */}
-                    <div className="absolute bottom-24 flex items-center justify-center w-full">
-                         <button
-                            onClick={handleCapture}
-                            className="w-20 h-20 bg-[#00C4B4] rounded-full flex items-center justify-center shadow-lg"
-                            aria-label="Capturar Imagem"
-                        >
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                    <FaceOutline />
+                    <div className="absolute bottom-24 flex items-center justify-center w-full z-20">
+                         <button onClick={handleCapture} className="w-20 h-20 bg-[#00C4B4] rounded-full flex items-center justify-center shadow-lg" aria-label="Capturar Imagem">
                            {icons.capture}
                         </button>
                     </div>
                 </div>
             )}
             
+            {/* Estado: Imagem Capturada */}
             {capturedImage && !isActive && (
                 <div className="relative w-full h-full flex items-center justify-center">
-                    <img
-                        src={capturedImage}
-                        alt="Imagem Capturada"
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-24 flex items-center justify-center w-full space-x-8">
+                    <img src={capturedImage} alt="Imagem Capturada" className="w-full h-full object-cover" />
+                    <div className="absolute bottom-24 flex items-center justify-center w-full space-x-8 z-20">
                         <button onClick={handleRetake} className="w-16 h-16 bg-white bg-opacity-70 text-black rounded-full flex items-center justify-center shadow-lg" aria-label="Repetir Captura">
                             {icons.retake}
                         </button>
@@ -109,6 +88,23 @@ export const CameraCapture: React.FC = () => {
                             Analisar
                         </button>
                     </div>
+                </div>
+            )}
+
+            {/* Estado: Inicial (Antes de ligar a câmara) */}
+            {!isActive && !capturedImage && (
+                <div className="relative w-full h-full flex flex-col items-center justify-center">
+                    <FaceOutline />
+                    <div className="z-20">
+                        <button onClick={startCamera} className="bg-[#00C4B4] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg">
+                            Iniciar Câmera
+                        </button>
+                    </div>
+                     {error && (
+                        <div className="absolute top-10 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-20">
+                            {error}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
