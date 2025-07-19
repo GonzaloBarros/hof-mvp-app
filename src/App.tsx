@@ -1,14 +1,18 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 import { Header } from './components/Layout/Header';
 import { Navigation } from './components/Layout/Navigation';
 import { CameraCapture } from './components/Camera/CameraCapture';
 import { SkinAnalysis } from './components/Analysis/SkinAnalysis';
+
 import { ImageProvider } from './context/ImageContext';
 import { PatientProvider } from './context/PatientContext';
 import { AnalysisProvider } from './context/AnalysisContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppointmentProvider } from './context/AppointmentContext';
+
 import { PatientsPage } from './pages/PatientsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -89,48 +93,56 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 }
 
 function App() {
-  return (
-    <AuthProvider>
-      <AppointmentProvider>
-        <AnalysisProvider>
-          <PatientProvider>
-            <ImageProvider>
-              <BrowserRouter>
-                <Routes>
-                  {/* Rotas Públicas */}
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
-                  {/* Rotas Protegidas */}
-                  <Route
-                    path="/*"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <Routes>
-                            <Route path="/" element={<DashboardPage />} />
-                            <Route path="/camera" element={<CameraCapture />} />
-                            <Route path="/analysis" element={<SkinAnalysis />} />
-                            <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
-                            <Route path="/patients" element={<PatientsPage />} />
-                            <Route path="/patient/:id" element={<PatientDetailPage />} />
-                            <Route path="/agenda" element={<AgendaPage />} />
-                            <Route path="/ask-ai" element={<AskAiPage />} />
-                            <Route path="/profile" element={<ProfilePage />} />
-                            <Route path="/add-patient" element={<AddPatientPage />} />
-                            <Route path="*" element={<Navigate to="/" />} />
-                          </Routes>
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                </Routes>
-              </BrowserRouter>
-            </ImageProvider>
-          </PatientProvider>
-        </AnalysisProvider>
-      </AppointmentProvider>
-    </AuthProvider>
+  if (!googleClientId) {
+    return <div className="p-4 text-red-500 font-bold">Erro: O ID do Cliente Google não foi configurado no ficheiro .env</div>;
+  }
+
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <AuthProvider>
+        <AppointmentProvider>
+          <AnalysisProvider>
+            <PatientProvider>
+              <ImageProvider>
+                <BrowserRouter>
+                  <Routes>
+                    {/* Rotas Públicas */}
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+
+                    {/* Rotas Protegidas */}
+                    <Route
+                      path="/*"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <Routes>
+                              <Route path="/" element={<DashboardPage />} />
+                              <Route path="/camera" element={<CameraCapture />} />
+                              <Route path="/analysis" element={<SkinAnalysis />} />
+                              <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
+                              <Route path="/patients" element={<PatientsPage />} />
+                              <Route path="/patient/:id" element={<PatientDetailPage />} />
+                              <Route path="/agenda" element={<AgendaPage />} />
+                              <Route path="/ask-ai" element={<AskAiPage />} />
+                              <Route path="/profile" element={<ProfilePage />} />
+                              <Route path="/add-patient" element={<AddPatientPage />} />
+                              <Route path="*" element={<Navigate to="/" />} />
+                            </Routes>
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </BrowserRouter>
+              </ImageProvider>
+            </PatientProvider>
+          </AnalysisProvider>
+        </AppointmentProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 
