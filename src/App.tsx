@@ -1,5 +1,5 @@
 import React from 'react';
-// A linha 'import ./App.css' foi removida para resolver o erro
+import './App.css';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Header } from './components/Layout/Header';
 import { Navigation } from './components/Layout/Navigation';
@@ -19,6 +19,7 @@ import { AskAiPage } from './pages/AskAiPage';
 import { PatientDetailPage } from './pages/PatientDetailPage';
 import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
 import { AgendaPage } from './pages/AgendaPage';
+import { AddPatientPage } from './pages/AddPatientPage'; // Importar a nova página
 
 // Componente que protege as rotas que exigem login
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -47,6 +48,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     title = "Inteligência Artificial";
   } else if (location.pathname.startsWith('/agenda')) {
     title = "Agenda";
+  } else if (location.pathname.startsWith('/add-patient')) {
+    title = "Adicionar Novo Paciente";
   }
   else {
       switch (location.pathname) {
@@ -64,8 +67,15 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  if (location.pathname === '/register' || location.pathname === '/login') {
-    return <>{children}</>;
+  if (location.pathname === '/register' || location.pathname === '/login' || location.pathname === '/add-patient') {
+    // Adicionamos a nova página aqui para que ela não tenha a navegação inferior
+    // mas ainda tenha o cabeçalho
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <Header title={title} />
+        <main>{children}</main>
+      </div>
+    )
   }
 
   if (location.pathname === '/') {
@@ -110,9 +120,10 @@ function App() {
                             <Route path="/agenda" element={<AgendaPage />} />
                             <Route path="/ask-ai" element={<AskAiPage />} />
                             <Route path="/profile" element={<ProfilePage />} />
+                            <Route path="/add-patient" element={<AddPatientPage />} /> {/* Nova Rota */}
                             <Route path="*" element={<Navigate to="/" />} />
                           </Routes>
-                        </MainLayout>
+                        </Layout>
                       </ProtectedRoute>
                     }
                   />
