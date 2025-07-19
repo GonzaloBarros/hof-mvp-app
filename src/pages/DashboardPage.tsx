@@ -37,7 +37,7 @@ const InfoCard = ({ title, children, onSearchChange }: { title: string, children
 
 export const DashboardPage: React.FC = () => {
   const { patients } = usePatients();
-  const { user } = useAuth();
+  const { user } = useAuth(); // Obtém os dados do usuário autenticado
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredPatients = patients
@@ -64,7 +64,8 @@ export const DashboardPage: React.FC = () => {
     <div className="p-6 bg-gray-50 min-h-full">
       <header className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Olá, {user?.name || 'Dr.'}</h1>
+          {/* Alterado o tamanho da fonte para text-2xl e adicionado o nome do usuário */}
+          <h1 className="text-2xl font-bold text-gray-800">Olá, {user?.name || 'Doutor'}</h1>
           <p className="text-gray-500 capitalize">{currentDate}</p>
         </div>
         <img
@@ -77,7 +78,7 @@ export const DashboardPage: React.FC = () => {
       <section className="grid grid-cols-3 gap-4 mb-10">
         <ActionButton to="/camera" icon={icons.analysis} label="Nova Análise" />
         <ActionButton to="/patients" icon={icons.patients} label="Pacientes" />
-        <ActionButton to="/agenda" icon={icons.agenda} label="Agenda" /> {/* <-- AQUI ESTÁ A ALTERAÇÃO */}
+        <ActionButton to="/agenda" icon={icons.agenda} label="Agenda" />
       </section>
 
       <section className="space-y-6">
