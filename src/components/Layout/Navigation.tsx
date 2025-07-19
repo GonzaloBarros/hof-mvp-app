@@ -2,18 +2,20 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useScrollDirection } from '../../hooks/useScrollDirection';
 
+// Componente de Ícone para reutilização
 const NavIcon = ({ children, isActive }: { children: React.ReactNode, isActive: boolean }) => (
   <div className={`w-8 h-8 mb-1 transition-colors ${isActive ? 'text-[#00C4B4]' : 'text-gray-500'}`}>
     {children}
   </div>
 );
 
+// Ícones para o menu flutuante
 const fabIcons = {
   plus: <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
   close: <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
   camera: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
   patient: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>,
-  text: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/></svg>,
+  reports: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></svg>,
   ai: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.45 4.1-4.1 1.45 4.1 1.45L12 14l1.45-4.1 4.1-1.45-4.1-1.45Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
 };
 
@@ -47,16 +49,16 @@ export const Navigation: React.FC = () => {
               <Link to="/ask-ai" onClick={() => setIsFabMenuOpen(false)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.ai}</Link>
             </div>
             <div className="flex items-center space-x-3">
+              <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Relatórios</span>
+              <Link to="/reports" onClick={() => setIsFabMenuOpen(false)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.reports}</Link>
+            </div>
+            <div className="flex items-center space-x-3">
               <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Nova Análise</span>
               <Link to="/camera" onClick={() => setIsFabMenuOpen(false)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.camera}</Link>
             </div>
             <div className="flex items-center space-x-3">
               <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Novo Paciente</span>
               <Link to="/add-patient" onClick={() => setIsFabMenuOpen(false)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.patient}</Link>
-            </div>
-            <div className="flex items-center space-x-3">
-              <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Publicar</span>
-              <button className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.text}</button>
             </div>
           </div>
         )}

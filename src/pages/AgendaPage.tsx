@@ -22,38 +22,37 @@ const messages = {
 
 export const AgendaPage: React.FC = () => {
     const { appointments, addAppointment } = useAppointments();
-    const [allEvents, setAllEvents] = useState<Appointment[]>(appointments);
+    const [allEvents, setAllEvents] = useState<Appointment[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
     const [googleToken, setGoogleToken] = useState<string | null>(null);
 
-    // Efeito para carregar os eventos da Google quando o token é recebido
-    useEffect(() => {
-        const fetchGoogleEvents = async (token: string) => {
-            try {
-                const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
+    const fetchGoogleEvents = async (token: string) => {
+        try {
+            const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.items) {
                 const googleEvents: Appointment[] = data.items.map((event: any) => ({
                     id: event.id,
                     title: event.summary,
                     start: new Date(event.start.dateTime || event.start.date),
                     end: new Date(event.end.dateTime || event.end.date),
                 }));
-                // Junta os eventos locais com os da Google
-                setAllEvents([...appointments, ...googleEvents]);
-            } catch (error) {
-                console.error("Erro ao buscar eventos do Google Calendar:", error);
+                // Junta os eventos locais com os da Google, evitando duplicados se já existirem
+                setAllEvents(prev => [...appointments, ...googleEvents.filter(ge => !appointments.some(ae => ae.id === ge.id))]);
             }
-        };
+        } catch (error) {
+            console.error("Erro ao buscar eventos do Google Calendar:", error);
+        }
+    };
 
+    useEffect(() => {
         if (googleToken) {
             fetchGoogleEvents(googleToken);
         } else {
-            setAllEvents(appointments); // Se não há token, mostra apenas os eventos locais
+            setAllEvents(appointments);
         }
     }, [googleToken, appointments]);
 
@@ -65,7 +64,7 @@ export const AgendaPage: React.FC = () => {
         onError: () => {
           alert('A ligação com o Google falhou. Por favor, tente novamente.');
         },
-        scope: 'https://www.googleapis.com/auth/calendar.readonly', // Apenas permissão de leitura por agora
+        scope: 'https://www.googleapis.com/auth/calendar', 
     });
 
     const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
@@ -73,9 +72,34 @@ export const AgendaPage: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleSaveAppointment = (appointment: Omit<Appointment, 'id'>) => {
-        addAppointment(appointment);
+    // AQUI ESTÁ A GRANDE ALTERAÇÃO
+    const handleSaveAppointment = async (appointmentData: Omit<Appointment, 'id'>) => {
+        // Primeiro, guarda o agendamento na nossa aplicação
+        addAppointment(appointmentData);
         setIsModalOpen(false);
+
+        // Se estivermos conectados ao Google, envia também para lá
+        if (googleToken) {
+            try {
+                await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${googleToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        summary: appointmentData.title,
+                        start: { dateTime: appointmentData.start.toISOString() },
+                        end: { dateTime: appointmentData.end.toISOString() },
+                    }),
+                });
+                // Recarrega os eventos para mostrar o novo agendamento da Google
+                fetchGoogleEvents(googleToken);
+            } catch (error) {
+                console.error("Erro ao criar evento no Google Calendar:", error);
+                alert("O agendamento foi salvo na aplicação, mas falhou ao sincronizar com o Google Calendar.");
+            }
+        }
     };
 
     return (
@@ -83,7 +107,7 @@ export const AgendaPage: React.FC = () => {
             {!googleToken ? (
                 <div className="text-center mb-4 p-4 bg-white rounded-lg shadow">
                     <h3 className="font-bold text-lg">Sincronize a sua Agenda</h3>
-                    <p className="text-gray-600 mb-3">Conecte-se à sua conta Google para ver os seus agendamentos do Google Calendar diretamente aqui.</p>
+                    <p className="text-gray-600 mb-3">Conecte-se à sua conta Google para ver e gerir os seus agendamentos do Google Calendar diretamente aqui.</p>
                     <button onClick={() => login()} className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition-colors">
                         Conectar com Google Calendar
                     </button>

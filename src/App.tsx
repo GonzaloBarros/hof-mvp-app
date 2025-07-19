@@ -23,6 +23,7 @@ import { PatientDetailPage } from './pages/PatientDetailPage';
 import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
 import { AgendaPage } from './pages/AgendaPage';
 import { AddPatientPage } from './pages/AddPatientPage';
+import { ReportsPage } from './pages/ReportsPage';
 
 // Componente que protege as rotas que exigem login
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -53,6 +54,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     title = "Agenda";
   } else if (location.pathname.startsWith('/add-patient')) {
     title = "Adicionar Novo Paciente";
+  } else if (location.pathname.startsWith('/reports')) {
+    title = "Relatórios";
   }
   else {
       switch (location.pathname) {
@@ -126,6 +129,7 @@ function App() {
                               <Route path="/patients" element={<PatientsPage />} />
                               <Route path="/patient/:id" element={<PatientDetailPage />} />
                               <Route path="/agenda" element={<AgendaPage />} />
+                              <Route path="/reports" element={<ReportsPage />} />
                               <Route path="/ask-ai" element={<AskAiPage />} />
                               <Route path="/profile" element={<ProfilePage />} />
                               <Route path="/add-patient" element={<AddPatientPage />} />
