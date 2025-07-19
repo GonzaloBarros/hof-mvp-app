@@ -1,19 +1,45 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
 import { useAnalyses } from '../context/AnalysisContext';
 
 export const PatientDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { patients } = usePatients();
+  const { patients, updatePatient, deletePatient } = usePatients();
   const { analyses } = useAnalyses();
+  const navigate = useNavigate();
 
   const patient = patients.find(p => p.id === id);
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [editedAge, setEditedAge] = useState('');
 
-  // Filtra as análises E ordena da mais recente para a mais antiga
+  useEffect(() => {
+    if (patient) {
+      setEditedName(patient.name);
+      setEditedAge(patient.age.toString());
+    }
+  }, [patient, isEditing]);
+
+
   const patientAnalyses = analyses
     .filter(a => a.patientId === id)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const handleDelete = () => {
+    if (patient && window.confirm(`Tem a certeza de que quer apagar o paciente ${patient.name}? Esta ação não pode ser desfeita.`)) {
+        deletePatient(patient.id);
+        navigate('/patients');
+    }
+  };
+
+  const handleSave = () => {
+    if(patient) {
+        updatePatient(patient.id, { name: editedName, age: parseInt(editedAge, 10) });
+        setIsEditing(false);
+    }
+  };
 
   if (!patient) {
     return (
@@ -28,22 +54,42 @@ export const PatientDetailPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-      {/* Cabeçalho com os dados do paciente */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div className="flex justify-between items-start">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-800">{patient.name}</h1>
-                <p className="text-gray-500">{patient.age} anos</p>
+            <div className="flex-grow">
+                {isEditing ? (
+                    <>
+                        <input type="text" value={editedName} onChange={(e) => setEditedName(e.target.value)} className="text-3xl font-bold text-gray-800 w-full border-b-2 p-1 mb-2"/>
+                        <input type="number" value={editedAge} onChange={(e) => setEditedAge(e.target.value)} className="text-gray-500 w-full border-b-2 p-1"/>
+                    </>
+                ) : (
+                    <>
+                        <h1 className="text-3xl font-bold text-gray-800">{patient.name}</h1>
+                        <p className="text-gray-500">{patient.age} anos</p>
+                    </>
+                )}
             </div>
             <img
                 src={patient.profilePic || `https://placehold.co/80x80/E8F5F4/1A3C5E?text=${patient.name.charAt(0)}`}
                 alt="Foto do Paciente"
-                className="w-20 h-20 rounded-full object-cover border-2 border-[#00C4B4]"
+                className="w-20 h-20 rounded-full object-cover border-2 border-[#00C4B4] ml-4"
             />
+        </div>
+        <div className="border-t mt-4 pt-4 flex space-x-4">
+            {isEditing ? (
+                <>
+                    <button onClick={handleSave} className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition-colors">Salvar</button>
+                    <button onClick={() => setIsEditing(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors">Cancelar</button>
+                </>
+            ) : (
+                 <>
+                    <button onClick={() => setIsEditing(true)} className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors">Editar Paciente</button>
+                    <button onClick={handleDelete} className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors">Apagar Paciente</button>
+                 </>
+            )}
         </div>
       </div>
 
-      {/* Botão para Novo Procedimento */}
       <div className="mb-8">
         <Link 
             to="/camera"
@@ -54,7 +100,6 @@ export const PatientDetailPage: React.FC = () => {
         </Link>
       </div>
 
-      {/* Histórico de Análises */}
       <div>
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">Histórico de Análises</h2>
         {patientAnalyses.length > 0 ? (
@@ -68,7 +113,6 @@ export const PatientDetailPage: React.FC = () => {
                     <p className="text-sm text-gray-500 mb-3">
                       {new Date(analysis.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })}
                     </p>
-                    {/* Resumo da análise */}
                     <div className="border-t border-gray-200 pt-3 mt-auto text-xs space-y-1">
                       <div className="flex justify-between"><span>Rugas:</span> <span className="font-bold">{analysis.skinProblems.wrinkles.severity}</span></div>
                       <div className="flex justify-between"><span>Manchas:</span> <span className="font-bold">{analysis.skinProblems.darkSpots.severity}</span></div>
