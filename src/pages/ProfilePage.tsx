@@ -14,7 +14,7 @@ export const ProfilePage: React.FC = () => {
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
     const [profilePic, setProfilePic] = useState<string | null>(null);
-    const [loadingUser, setLoadingUser] = useState(true); // NOVO: Estado para controlar o carregamento
+    const [loadingUser, setLoadingUser] = useState(true);
 
     // Efeito para preencher o formulário com os dados do utilizador
     useEffect(() => {
@@ -26,21 +26,18 @@ export const ProfilePage: React.FC = () => {
             setCity(user.city);
             setState(user.state);
             setProfilePic(user.profilePic);
-            setLoadingUser(false); // Usuário carregado
+            setLoadingUser(false);
         } else {
-            // Se não houver usuário, mas o loadingUser ainda for true, tenta carregar.
-            // Se persistir nulo, o ProtectedRoute deve redirecionar.
-            setLoadingUser(false); // Se user for null inicialmente, não estamos 'carregando', apenas não autenticados.
-                                   // A ProtectedRoute cuida do redirecionamento.
+            setLoadingUser(false);
         }
     }, [user]);
 
-    // NOVO: Efeito para redirecionar se o usuário não estiver logado
+    // Efeito para redirecionar se o usuário não estiver logado
     useEffect(() => {
-        if (!loadingUser && !user) { // Se não estiver mais carregando e não houver usuário
+        if (!loadingUser && !user) {
             const timer = setTimeout(() => {
-                navigate('/login', { replace: true }); // Redireciona para login
-            }, 500); // Dá um pequeno tempo para a UI renderizar
+                navigate('/login', { replace: true });
+            }, 500);
             return () => clearTimeout(timer);
         }
     }, [user, loadingUser, navigate]);
@@ -48,7 +45,7 @@ export const ProfilePage: React.FC = () => {
 
     const handleLogout = () => {
         logout();
-        navigate('/login', { replace: true }); // Use replace para não deixar a página de perfil no histórico
+        navigate('/login', { replace: true });
     };
 
     const handlePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,10 +65,10 @@ export const ProfilePage: React.FC = () => {
             const updatedUser = { name, email, cro, phone, city, state, profilePic };
             updateUser(updatedUser);
             alert('Perfil atualizado com sucesso!');
+            navigate('/'); // NOVO: Redireciona para o Dashboard após salvar
         }
     };
 
-    // NOVO: Renderiza um estado de carregamento enquanto o usuário está sendo verificado
     if (loadingUser) {
         return (
             <div className="p-8 text-center bg-gray-50 min-h-screen flex items-center justify-center">
@@ -80,8 +77,6 @@ export const ProfilePage: React.FC = () => {
         );
     }
 
-    // Se não houver usuário (após o carregamento), o ProtectedRoute deveria ter redirecionado.
-    // Mas para segurança e caso de acesso direto, podemos ter um fallback.
     if (!user) {
         return (
             <div className="p-8 text-center bg-gray-50 min-h-screen flex items-center justify-center">
@@ -107,7 +102,7 @@ export const ProfilePage: React.FC = () => {
                         <span>Mudar foto</span>
                         <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handlePictureUpload} accept="image/*"/>
                     </label>
-                    
+
                     <div className="mt-6 w-full space-y-4">
                         <div>
                             <label htmlFor='name' className='block text-sm font-medium text-gray-700'>Nome Completo</label>

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
 import { useAuth } from '../context/AuthContext';
 
+// Componente para os cartões de ação principais
 const ActionButton = ({ to, icon, label }: { to: string, icon: React.ReactNode, label: string }) => (
   <Link to={to} className="flex flex-col items-center space-y-2 text-center">
     <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 transition-colors text-[#00B5A5]">
@@ -14,6 +15,7 @@ const ActionButton = ({ to, icon, label }: { to: string, icon: React.ReactNode, 
   </Link>
 );
 
+// Componente para os cartões de informação
 const InfoCard = ({ title, children, onSearchChange }: { title: string, children: React.ReactNode, onSearchChange?: (term: string) => void }) => (
   <div className="bg-white p-6 rounded-xl shadow-lg">
     <div className="flex justify-between items-center mb-4">
@@ -37,15 +39,22 @@ const InfoCard = ({ title, children, onSearchChange }: { title: string, children
 
 export const DashboardPage: React.FC = () => {
   const { patients } = usePatients();
-  const { user } = useAuth(); // Obtém os dados do usuário autenticado
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredPatients = patients
-    .slice()
-    .reverse()
-    .filter(patient =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  // NOVO: Filtra apenas pacientes ATIVOS antes de aplicar a pesquisa e reverter
+  const filteredPatients = useMemo(() => {
+    let activePatients = patients.filter(patient => patient.isActive); // Filtra por ativo
+
+    if (searchTerm) {
+      activePatients = activePatients.filter(patient =>
+        patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    // Sempre reverte para mostrar os mais recentes primeiro
+    return activePatients.slice().reverse();
+  }, [patients, searchTerm]);
+
 
   const currentDate = new Date().toLocaleDateString('pt-PT', {
     weekday: 'long',
@@ -64,8 +73,7 @@ export const DashboardPage: React.FC = () => {
     <div className="p-6 bg-gray-50 min-h-full">
       <header className="flex justify-between items-center mb-8">
         <div>
-          {/* Alterado o tamanho da fonte para text-2xl e adicionado o nome do usuário */}
-          <h1 className="text-2xl font-bold text-gray-800">Olá, {user?.name || 'Doutor'}</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Olá, {user?.name || 'Dr.'}</h1>
           <p className="text-gray-500 capitalize">{currentDate}</p>
         </div>
         <img
@@ -74,22 +82,25 @@ export const DashboardPage: React.FC = () => {
           className="w-14 h-14 rounded-full object-cover border-2 border-[#00C4B4]"
         />
       </header>
-      
+
       <section className="grid grid-cols-3 gap-4 mb-10">
         <ActionButton to="/camera" icon={icons.analysis} label="Nova Análise" />
         <ActionButton to="/patients" icon={icons.patients} label="Pacientes" />
-        <ActionButton to="/agenda" icon={icons.agenda} label="Agenda" />
+        <ActionButton to="#" icon={icons.agenda} label="Agenda" />
       </section>
 
       <section className="space-y-6">
         <InfoCard title="Consultas de Hoje">
           <p className="text-gray-400 text-center py-4">Nenhuma consulta para hoje</p>
         </InfoCard>
+
+        {/* A lista de pacientes agora exibe todos os pacientes ativos e filtrados */}
         <InfoCard title="Pacientes" onSearchChange={setSearchTerm}>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {filteredPatients.length > 0 ? (
               filteredPatients.map(patient => (
-                <Link to={`/patient/${patient.id}`} key={patient.id} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-50">
+                <Link to={`/patient/${patient.id}`} key={patient.id}
+                  className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-50">
                   <img
                     src={patient.profilePic || `https://placehold.co/40x40/E8F5F4/1A3C5E?text=${patient.name.charAt(0)}`}
                     alt="Foto do Paciente"
@@ -106,6 +117,16 @@ export const DashboardPage: React.FC = () => {
             ) : (
               <p className="text-gray-400 text-center py-4">Nenhum paciente encontrado</p>
             )}
+            {/* Conteúdo de teste para forçar o scroll (remover em produção) */}
+            {[...Array(15)].map((_, i) => (
+              <div key={i} className="flex items-center space-x-4 p-2 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
+                </div>
+              </div>
+            ))}
           </div>
         </InfoCard>
       </section>

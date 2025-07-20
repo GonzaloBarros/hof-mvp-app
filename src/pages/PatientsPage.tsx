@@ -1,32 +1,26 @@
-import React, { useState, useMemo } from 'react'; // Importar useMemo
+import React, { useState, useMemo } from 'react';
 import { PatientForm } from '../components/Patient/PatientForm';
 import { PatientList } from '../components/Patient/PatientList';
-import { usePatients } from '../context/PatientContext'; // Para acessar todos os pacientes
+import { usePatients } from '../context/PatientContext';
 
 export const PatientsPage: React.FC = () => {
     const { patients } = usePatients();
     const [searchTerm, setSearchTerm] = useState('');
-    // Poderíamos adicionar estados para outros filtros aqui, ex: const [ageFilter, setAgeFilter] = useState('');
 
-    // Lógica de filtragem dos pacientes. Usamos useMemo para otimizar.
     const filteredPatients = useMemo(() => {
-        let currentPatients = patients;
+        // Primeiro, filtra apenas os pacientes ATIVOS
+        let activePatients = patients.filter(patient => patient.isActive);
 
-        // Filtro por termo de busca
+        // Depois, aplica o filtro de pesquisa
         if (searchTerm) {
-            currentPatients = currentPatients.filter(patient =>
+            activePatients = activePatients.filter(patient =>
                 patient.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
-        // Exemplo: filtro por idade (apenas para ilustrar, não implementado ainda)
-        // if (ageFilter) {
-        //     currentPatients = currentPatients.filter(patient => patient.age === parseInt(ageFilter));
-        // }
-
-        // Ordena os pacientes do mais recente para o mais antigo (se não for feito no PatientContext)
-        return currentPatients.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }, [patients, searchTerm]); // Recalcula apenas quando 'patients' ou 'searchTerm' mudam
+        // Ordena os pacientes do mais recente para o mais antigo
+        return activePatients.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }, [patients, searchTerm]);
 
     return (
         <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
