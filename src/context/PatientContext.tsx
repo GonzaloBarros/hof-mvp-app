@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Patient } from '../types/patient'; // Importar o tipo Patient atualizado
+import { Patient } from '../types/patient';
 
 interface PatientContextType {
     patients: Patient[];
-    addPatient: (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive'>) => void;
+    addPatient: (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive' | 'comments'>) => void; // Removido 'comments' aqui, pois é opcional na criação
     updatePatientProfilePic: (id: string, profilePic: string) => void;
-    softDeletePatient: (id: string) => void; // Função para exclusão lógica
+    softDeletePatient: (id: string) => void;
+    updatePatientComments: (id: string, comments: string) => void; // NOVO: Função para atualizar comentários
 }
 
 const PatientContext = createContext<PatientContextType | undefined>(undefined);
@@ -16,11 +17,10 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
             const savedPatients = localStorage.getItem('medanalis_patients');
             if (savedPatients) {
                 const parsed = JSON.parse(savedPatients);
-                // IMPORTANTE: Garante que 'isActive' é TRUE por padrão para pacientes existentes,
-                // a menos que esteja explicitamente definido como FALSE.
                 return parsed.map((p: Patient) => ({
                     ...p,
-                    isActive: p.isActive === false ? false : true // Se for explicitamente false, mantém. Caso contrário, é true.
+                    isActive: p.isActive === false ? false : true,
+                    comments: p.comments || '' // Garante que 'comments' existe e é string
                 }));
             }
         } catch (error) {
@@ -37,11 +37,12 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
     }, [patients]);
 
-    const addPatient = (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive'>) => {
+    const addPatient = (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive' | 'comments'>) => {
         const newPatient: Patient = {
-            id: Date.now().toString(), // ID único
-            createdAt: new Date().toISOString(), // Data de criação
-            isActive: true, // Sempre ativo ao criar
+            id: Date.now().toString(),
+            createdAt: new Date().toISOString(),
+            isActive: true,
+            comments: '', // Inicializa comentários vazios
             ...patient,
         };
         setPatients((prevPatients) => [...prevPatients, newPatient]);
@@ -59,8 +60,15 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
         );
     };
 
+    // NOVO: Implementação da função para atualizar comentários
+    const updatePatientComments = (id: string, comments: string) => {
+        setPatients((prevPatients) =>
+            prevPatients.map((p) => (p.id === id ? { ...p, comments } : p))
+        );
+    };
+
     return (
-        <PatientContext.Provider value={{ patients, addPatient, updatePatientProfilePic, softDeletePatient }}>
+        <PatientContext.Provider value={{ patients, addPatient, updatePatientProfilePic, softDeletePatient, updatePatientComments }}>
             {children}
         </PatientContext.Provider>
     );

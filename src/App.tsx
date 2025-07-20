@@ -5,7 +5,7 @@ import { Navigation } from './components/Layout/Navigation';
 import { CameraCapture } from './components/Camera/CameraCapture';
 import { SkinAnalysis } from './components/Analysis/SkinAnalysis';
 import { ImageProvider } from './context/ImageContext';
-import { PatientProvider } from './context/PatientContext';
+import { PatientProvider } from './context/PatientContext'; // LINHA CORRIGIDA AQUI
 import { AnalysisProvider } from './context/AnalysisContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ReportProvider } from './context/ReportContext';
@@ -19,7 +19,8 @@ import { AgendaPage } from './pages/AgendaPage';
 import { AskAiPage } from './pages/AskAiPage';
 import { DashboardReportsPage } from './pages/DashboardReportsPage';
 import { GeneratedPDFsPage } from './pages/GeneratedPDFsPage';
-import { ProfilePage } from './pages/ProfilePage'; // NOVO: Importe a ProfilePage
+import { ProfilePage } from './pages/ProfilePage';
+import { AddPatientPage } from './pages/AddPatientPage';
 
 // Componente que protege as rotas que exigem login
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -50,8 +51,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     title = "PDFs Gerados";
   } else if (location.pathname.startsWith('/agenda')) {
     title = "Agenda";
-  } else if (location.pathname.startsWith('/profile')) { // NOVO: Título para a página de perfil
+  } else if (location.pathname.startsWith('/profile')) {
     title = "Meu Perfil";
+  } else if (location.pathname.startsWith('/add-patient')) {
+    title = "Cadastrar Paciente";
   }
   else {
     switch (location.pathname) {
@@ -108,11 +111,12 @@ function App() {
                             <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
                             <Route path="/patients" element={<PatientsPage />} />
                             <Route path="/patient/:id" element={<PatientDetailPage />} />
+                            <Route path="/add-patient" element={<AddPatientPage />} />
                             <Route path="/reports-dashboard" element={<DashboardReportsPage />} />
                             <Route path="/generated-pdfs" element={<GeneratedPDFsPage />} />
                             <Route path="/agenda" element={<AgendaPage />} />
                             <Route path="/ask-ai" element={<AskAiPage />} />
-                            <Route path="/profile" element={<ProfilePage />} /> {/* NOVO: Rota para a página de perfil */}
+                            <Route path="/profile" element={<ProfilePage />} />
 
                             <Route path="*" element={<Navigate to="/" />} />
                           </Routes>
