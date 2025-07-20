@@ -18,6 +18,7 @@ export const SkinAnalysis: React.FC = () => {
     const [selectedPatientId, setSelectedPatientId] = useState<string>('');
 
     useEffect(() => {
+        // Seleciona o primeiro paciente da lista por defeito
         if (patients.length > 0) {
             setSelectedPatientId(patients[0].id);
         }
@@ -52,12 +53,13 @@ export const SkinAnalysis: React.FC = () => {
             const patient = patients.find(p => p.id === selectedPatientId);
             addAnalysis(analysisResult, selectedPatientId, capturedImage);
 
+            // Se o paciente não tiver foto de perfil, define esta como a foto de perfil
             if (patient && !patient.profilePic) {
                 updatePatientProfilePic(patient.id, capturedImage);
             }
 
             alert('Análise guardada com sucesso!');
-            navigate('/patients');
+            navigate(`/patient/${selectedPatientId}`); // Navega para a página de detalhes do paciente
         }
     };
 
@@ -121,6 +123,7 @@ export const SkinAnalysis: React.FC = () => {
                                 <div className="flex flex-col items-center"><h4 className="font-medium text-gray-600 mb-1">Acne</h4><p className="font-bold text-4xl text-gray-800">{analysisResult?.skinProblems.acne.severity}</p><p className="text-xs text-gray-400 mt-1">({analysisResult?.skinProblems.acne.areas.join(', ')})</p></div>
                             </div>
                         </div>
+                        {/* Secção para guardar a análise */}
                         <div className="bg-white rounded-xl shadow-lg p-6 no-print">
                             <h3 className="text-xl font-semibold text-gray-800 mb-4">Guardar Análise no Processo</h3>
                             <div className="space-y-4">

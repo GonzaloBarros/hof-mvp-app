@@ -3,14 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { useCamera } from '../../hooks/useCamera';
 import { useImage } from '../../context/ImageContext';
 
-// Componente para a guia oval animada
+// Componente para a guia oval com efeito de máscara
 const FaceOutline = () => (
     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
         <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg mb-4 shadow-lg">
             Posicione o rosto dentro do oval
         </div>
+        {/* Este div cria o efeito de máscara */}
         <div
-            className="w-[70vw] h-[60vh] max-w-sm max-h-96 border-4 border-dashed border-[#00C4B4] rounded-[50%] animate-spin-slow"
+            className="w-[70vw] h-[60vh] max-w-sm max-h-96 border-4 border-dashed border-[#00C4B4] rounded-[50%]"
+            // A sombra "box-shadow" cria o overlay escuro à volta do oval
+            style={{ boxShadow: '0 0 0 9999px rgba(31, 41, 55, 0.7)' }}
         ></div>
     </div>
 );
@@ -18,7 +21,7 @@ const FaceOutline = () => (
 
 export const CameraCapture: React.FC = () => {
     const { stream, isActive, error, startCamera, stopCamera, captureImage } = useCamera();
-    const { setCapturedImage } = useImage(); // Apenas precisamos de 'set' aqui
+    const { setCapturedImage } = useImage();
     const navigate = useNavigate();
     const videoRef = useRef<HTMLVideoElement>(null);
     const [showInitialScreen, setShowInitialScreen] = useState(true);
@@ -44,23 +47,24 @@ export const CameraCapture: React.FC = () => {
         setShowInitialScreen(false);
     }
 
-    // *** AQUI ESTÁ A CORREÇÃO PRINCIPAL ***
     const handleCapture = () => {
         const imageData = captureImage(videoRef);
         if (imageData) {
-            setCapturedImage(imageData); // Guarda a imagem no contexto global
+            setCapturedImage(imageData);
             stopCamera();
-            navigate('/analysis'); // Navega IMEDIATAMENTE para a página de análise
+            navigate('/analysis');
         }
     };
 
     return (
-        <div className="w-full h-full bg-gray-800 text-white">
+        <div className="w-full h-[calc(100vh-128px)] bg-gray-800 text-white">
             {/* Estado: Inicial (Antes de ligar a câmara) */}
             {showInitialScreen && (
-                 <div className="relative w-full h-full flex flex-col items-center justify-center">
+                 <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+                    {/* O fundo cinzento agora está aqui para o estado inicial */}
+                    <div className="absolute inset-0 bg-gray-800"></div>
                     <FaceOutline />
-                    <div className="z-20">
+                    <div className="absolute bottom-24 flex items-center justify-center w-full z-20">
                         <button onClick={handleStartCamera} className="bg-[#00C4B4] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg">
                             Iniciar Câmera
                         </button>
@@ -75,8 +79,8 @@ export const CameraCapture: React.FC = () => {
 
             {/* Estado: Câmara Ativa */}
             {isActive && (
-                <div className="relative w-full h-full flex items-center justify-center">
-                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                    <video ref={videoRef} autoPlay playsInline muted className="absolute min-w-full min-h-full w-auto h-auto object-cover" />
                     <FaceOutline />
                     <div className="absolute bottom-24 flex items-center justify-center w-full z-20">
                         <button onClick={handleCapture} className="w-20 h-20 bg-[#00C4B4] rounded-full flex items-center justify-center shadow-lg" aria-label="Capturar Imagem">
