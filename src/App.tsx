@@ -1,137 +1,118 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+// Layout Components
 import { Header } from './components/Layout/Header';
 import { Navigation } from './components/Layout/Navigation';
-import { CameraCapture } from './components/Camera/CameraCapture';
-import { SkinAnalysis } from './components/Analysis/SkinAnalysis';
+
+// Context Providers
 import { ImageProvider } from './context/ImageContext';
-import { PatientProvider } from './context/PatientContext'; // LINHA CORRIGIDA AQUI
+import { PatientProvider } from './context/PatientContext';
 import { AnalysisProvider } from './context/AnalysisContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ReportProvider } from './context/ReportContext';
-import { PatientsPage } from './pages/PatientsPage';
+import { AppointmentProvider } from './context/AppointmentContext';
+
+// Pages
 import { DashboardPage } from './pages/DashboardPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { LoginPage } from './pages/LoginPage';
+import { CameraCapture } from './components/Camera/CameraCapture';
+import { SkinAnalysis } from './components/Analysis/SkinAnalysis';
+import { PatientsPage } from './pages/PatientsPage';
 import { PatientDetailPage } from './pages/PatientDetailPage';
 import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
-import { AgendaPage } from './pages/AgendaPage';
 import { AskAiPage } from './pages/AskAiPage';
-import { DashboardReportsPage } from './pages/DashboardReportsPage';
-import { GeneratedPDFsPage } from './pages/GeneratedPDFsPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { AddPatientPage } from './pages/AddPatientPage';
+import { AgendaPage } from './pages/AgendaPage';
 
-// Componente que protege as rotas que exigem login
+// Componente que protege as rotas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return <>{children}</>;
-};
-
-// Componente para gerir o layout principal (Header e Navigation)
-const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
-  let title = "Dashboard";
-
-  if (location.pathname.startsWith('/patient/')) {
-    title = "Detalhes do Paciente";
-  } else if (location.pathname.startsWith('/analysis/')) {
-    title = "Detalhes da Análise";
-  } else if (location.pathname.startsWith('/ask-ai')) {
-    title = "Pergunte para IA";
-  } else if (location.pathname.startsWith('/reports-dashboard')) {
-    title = "Relatórios e Estatísticas";
-  } else if (location.pathname.startsWith('/generated-pdfs')) {
-    title = "PDFs Gerados";
-  } else if (location.pathname.startsWith('/agenda')) {
-    title = "Agenda";
-  } else if (location.pathname.startsWith('/profile')) {
-    title = "Meu Perfil";
-  } else if (location.pathname.startsWith('/add-patient')) {
-    title = "Cadastrar Paciente";
-  }
-  else {
-    switch (location.pathname) {
-      case '/camera':
-        title = "Captura Facial";
-        break;
-      case '/analysis':
-        title = "Nova Análise";
-        break;
-      case '/patients':
-        title = "Pacientes";
-        break;
-      default:
-        title = "Dashboard";
+    const { isAuthenticated } = useAuth();
+    const location = useLocation();
+    if (!isAuthenticated) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
-  }
-
-  if (location.pathname === '/register' || location.pathname === '/login') {
     return <>{children}</>;
-  }
-
-  return (
-    <div className="bg-gray-50 min-h-screen pb-24">
-      <Header title={title} />
-      <main>{children}</main>
-      <Navigation />
-    </div>
-  );
 };
+
+// Componente para gerir o layout principal
+const MainLayout = ({ children }: { children: React.ReactNode }) => {
+    const location = useLocation();
+    let title = "Dashboard";
+
+    if (location.pathname.startsWith('/patient/')) {
+        title = "Detalhes do Paciente";
+    } else if (location.pathname.startsWith('/analysis/')) {
+        title = "Detalhes da Análise";
+    } else {
+        switch (location.pathname) {
+            case '/camera': title = "Captura Facial"; break;
+            case '/analysis': title = "Nova Análise"; break;
+            case '/patients': title = "Pacientes"; break;
+            case '/agenda': title = "Agenda"; break;
+            case '/ask-ai': title = "Pergunte para IA"; break;
+            default: title = "Dashboard";
+        }
+    }
+
+    if (location.pathname === '/register' || location.pathname === '/login') {
+        return <>{children}</>;
+    }
+
+    if (location.pathname === '/') {
+        return <div className="bg-gray-50 min-h-screen pb-24"><main>{children}</main><Navigation /></div>;
+    }
+
+    return (
+        <div className="bg-gray-50 min-h-screen pb-24">
+            <Header title={title} />
+            <main>{children}</main>
+            <Navigation />
+        </div>
+    )
+}
 
 function App() {
-  return (
-    <AuthProvider>
-      <AnalysisProvider>
-        <PatientProvider>
-          <ImageProvider>
-            <ReportProvider>
-              <Router>
-                <Routes>
-                  {/* Rotas Públicas */}
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
+    // Lendo a chave da forma correta e segura
+    const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
-                  {/* Rotas Protegidas (exigem login) */}
-                  <Route
-                    path="/*"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <Routes>
-                            <Route path="/" element={<DashboardPage />} />
-                            <Route path="/camera" element={<CameraCapture />} />
-                            <Route path="/analysis" element={<SkinAnalysis />} />
-                            <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
-                            <Route path="/patients" element={<PatientsPage />} />
-                            <Route path="/patient/:id" element={<PatientDetailPage />} />
-                            <Route path="/add-patient" element={<AddPatientPage />} />
-                            <Route path="/reports-dashboard" element={<DashboardReportsPage />} />
-                            <Route path="/generated-pdfs" element={<GeneratedPDFsPage />} />
-                            <Route path="/agenda" element={<AgendaPage />} />
-                            <Route path="/ask-ai" element={<AskAiPage />} />
-                            <Route path="/profile" element={<ProfilePage />} />
-
-                            <Route path="*" element={<Navigate to="/" />} />
-                          </Routes>
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                </Routes>
-              </Router>
-            </ReportProvider>
-          </ImageProvider>
-        </PatientProvider>
-      </AnalysisProvider>
-    </AuthProvider>
-  );
+    return (
+        <GoogleOAuthProvider clientId={googleClientId}>
+            <AuthProvider>
+                <PatientProvider>
+                    <AppointmentProvider>
+                        <AnalysisProvider>
+                            <ImageProvider>
+                                <BrowserRouter>
+                                    <Routes>
+                                        <Route path="/login" element={<LoginPage />} />
+                                        <Route path="/register" element={<RegisterPage />} />
+                                        <Route path="/*" element={
+                                            <ProtectedRoute>
+                                                <MainLayout>
+                                                    <Routes>
+                                                        <Route path="/" element={<DashboardPage />} />
+                                                        <Route path="/camera" element={<CameraCapture />} />
+                                                        <Route path="/analysis" element={<SkinAnalysis />} />
+                                                        <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
+                                                        <Route path="/patients" element={<PatientsPage />} />
+                                                        <Route path="/patient/:id" element={<PatientDetailPage />} />
+                                                        <Route path="/ask-ai" element={<AskAiPage />} />
+                                                        <Route path="/agenda" element={<AgendaPage />} />
+                                                        <Route path="*" element={<Navigate to="/" />} />
+                                                    </Routes>
+                                                </MainLayout>
+                                            </ProtectedRoute>
+                                        } />
+                                    </Routes>
+                                </BrowserRouter>
+                            </ImageProvider>
+                        </AnalysisProvider>
+                    </AppointmentProvider>
+                </PatientProvider>
+            </AuthProvider>
+        </GoogleOAuthProvider>
+    );
 }
 
 export default App;
