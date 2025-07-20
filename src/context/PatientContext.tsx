@@ -3,10 +3,11 @@ import { Patient } from '../types/patient';
 
 interface PatientContextType {
     patients: Patient[];
-    addPatient: (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive' | 'comments'>) => void; // Removido 'comments' aqui, pois é opcional na criação
+    addPatient: (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive' | 'comments'>) => void;
     updatePatientProfilePic: (id: string, profilePic: string) => void;
     softDeletePatient: (id: string) => void;
-    updatePatientComments: (id: string, comments: string) => void; // NOVO: Função para atualizar comentários
+    updatePatientComments: (id: string, comments: string) => void;
+    updatePatient: (id: string, updatedFields: Partial<Patient>) => void; // NOVO: Função para atualizar paciente
 }
 
 const PatientContext = createContext<PatientContextType | undefined>(undefined);
@@ -20,7 +21,7 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
                 return parsed.map((p: Patient) => ({
                     ...p,
                     isActive: p.isActive === false ? false : true,
-                    comments: p.comments || '' // Garante que 'comments' existe e é string
+                    comments: p.comments || ''
                 }));
             }
         } catch (error) {
@@ -42,7 +43,7 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
             id: Date.now().toString(),
             createdAt: new Date().toISOString(),
             isActive: true,
-            comments: '', // Inicializa comentários vazios
+            comments: '',
             ...patient,
         };
         setPatients((prevPatients) => [...prevPatients, newPatient]);
@@ -60,15 +61,21 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
         );
     };
 
-    // NOVO: Implementação da função para atualizar comentários
     const updatePatientComments = (id: string, comments: string) => {
         setPatients((prevPatients) =>
             prevPatients.map((p) => (p.id === id ? { ...p, comments } : p))
         );
     };
 
+    // NOVO: Implementação da função para atualizar paciente com campos parciais
+    const updatePatient = (id: string, updatedFields: Partial<Patient>) => {
+        setPatients((prevPatients) =>
+            prevPatients.map((p) => (p.id === id ? { ...p, ...updatedFields } : p))
+        );
+    };
+
     return (
-        <PatientContext.Provider value={{ patients, addPatient, updatePatientProfilePic, softDeletePatient, updatePatientComments }}>
+        <PatientContext.Provider value={{ patients, addPatient, updatePatientProfilePic, softDeletePatient, updatePatientComments, updatePatient }}>
             {children}
         </PatientContext.Provider>
     );

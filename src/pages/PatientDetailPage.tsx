@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
 import { useAnalyses } from '../context/AnalysisContext';
+import { Patient } from '../types/patient'; // Importar o tipo Patient
 
 // Definir o tipo para a interface de reconhecimento de fala
 declare global {
@@ -13,7 +14,7 @@ declare global {
 
 export const PatientDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const { patients, softDeletePatient, updatePatientComments } = usePatients();
+    const { patients, softDeletePatient, updatePatientComments, updatePatient } = usePatients(); // Usar updatePatient
     const { analyses } = useAnalyses();
     const navigate = useNavigate();
 
@@ -24,12 +25,33 @@ export const PatientDetailPage: React.FC = () => {
     const [isRecording, setIsRecording] = useState(false);
     const recognitionRef = useRef<any>(null);
 
+    // NOVO: Estados para o modo de edição e para os campos editáveis
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedPatient, setEditedPatient] = useState<Partial<Patient>>({});
+
     // Efeito para carregar os comentários do paciente quando a página carrega
     useEffect(() => {
         if (patient && patient.comments) {
             setComments(patient.comments);
         }
     }, [patient]);
+
+    // Efeito para preencher os campos editáveis quando o paciente é carregado ou o modo de edição inicia
+    useEffect(() => {
+        if (patient) {
+            setEditedPatient({
+                name: patient.name,
+                age: patient.age,
+                birthDate: patient.birthDate,
+                phone: patient.phone,
+                email: patient.email,
+                mainComplaint: patient.mainComplaint,
+                healthHistory: patient.healthHistory,
+                profilePic: patient.profilePic,
+            });
+        }
+    }, [patient]);
+
 
     // Lógica para iniciar e parar o reconhecimento de fala
     useEffect(() => {
@@ -42,7 +64,7 @@ export const PatientDetailPage: React.FC = () => {
         recognitionRef.current = new SpeechRecognition();
         recognitionRef.current.continuous = false;
         recognitionRef.current.interimResults = false;
-        recognitionRef.current.lang = 'pt-BR'; // Definir idioma para Português do Brasil
+        recognitionRef.current.lang = 'pt-BR';
 
         recognitionRef.current.onstart = () => {
             setIsRecording(true);
@@ -94,6 +116,39 @@ export const PatientDetailPage: React.FC = () => {
         }
     };
 
+    // NOVO: Função para salvar as edições do paciente
+    const handleSavePatientEdits = () => {
+        if (patient && editedPatient.name && editedPatient.birthDate && editedPatient.phone && editedPatient.email && editedPatient.mainComplaint) {
+            const updatedPatientData: Partial<Patient> = {
+                ...editedPatient,
+                age: editedPatient.birthDate ? (new Date().getFullYear() - new Date(editedPatient.birthDate).getFullYear()) : (editedPatient.age || 0), // Recalcula idade ou usa a digitada
+                profilePic: editedPatient.profilePic // Garante que a foto é atualizada se mudou
+            };
+            updatePatient(patient.id, updatedPatientData);
+            setIsEditing(false); // Sai do modo de edição
+            alert('Dados do paciente atualizados com sucesso!');
+        } else {
+            alert('Por favor, preencha todos os campos obrigatórios para salvar.');
+        }
+    };
+
+    // NOVO: Função para cancelar a edição
+    const handleCancelEdit = () => {
+        setIsEditing(false); // Sai do modo de edição
+        if (patient) { // Reseta os campos editáveis para os valores originais
+            setEditedPatient({
+                name: patient.name,
+                age: patient.age,
+                birthDate: patient.birthDate,
+                phone: patient.phone,
+                email: patient.email,
+                mainComplaint: patient.mainComplaint,
+                healthHistory: patient.healthHistory,
+                profilePic: patient.profilePic,
+            });
+        }
+    };
+
     const handleDeletePatient = () => {
         if (patient && window.confirm(`Tem certeza que deseja apagar o paciente ${patient.name}? Esta ação não pode ser desfeita.`)) {
             softDeletePatient(patient.id);
@@ -102,6 +157,7 @@ export const PatientDetailPage: React.FC = () => {
         }
     };
 
+    // Se o paciente não for encontrado ou estiver inativo
     if (!patient) {
         return (
             <div className="text-center p-8 bg-gray-50 min-h-screen flex items-center justify-center">
@@ -114,9 +170,8 @@ export const PatientDetailPage: React.FC = () => {
     }
 
     return (
-        // CORRIGIDO AQUI: className com classes Tailwind corretas e fechamento da string
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-            {/* Cabeçalho com os dados do paciente */}
+            {/* Cabeçalho com os dados do paciente e botão de editar */}
             <div className="bg-white rounded-xl shadow-lg p-6 mb-8 flex flex-col items-center sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
                 <img
                     src={displayProfilePic}
@@ -124,12 +179,99 @@ export const PatientDetailPage: React.FC = () => {
                     className="w-32 h-32 rounded-full object-cover border-4 border-[#00C4B4] mb-4 sm:mb-0"
                 />
                 <div className="text-center sm:text-left flex-grow">
-                    <h1 className="text-3xl font-bold text-gray-800">{patient.name}</h1>
-                    <p className="text-gray-500 text-lg">Nascimento: {new Date(patient.birthDate).toLocaleDateString('pt-PT')}</p>
-                    <p className="text-gray-500 text-lg">Telefone: {patient.phone}</p>
-                    <p className="text-gray-500 text-lg">Email: {patient.email}</p>
-                    <p className="text-gray-500 text-lg mt-2">Idade: {patient.age} anos</p>
-                    <p className="text-gray-500 text-lg">Adicionado em: {new Date(patient.createdAt).toLocaleDateString('pt-PT')}</p>
+                    {isEditing ? (
+                        <>
+                            <label htmlFor="edit-name" className="sr-only">Nome</label>
+                            <input
+                                type="text"
+                                id="edit-name"
+                                value={editedPatient.name || ''}
+                                onChange={(e) => setEditedPatient({ ...editedPatient, name: e.target.value })}
+                                className="text-3xl font-bold text-gray-800 bg-gray-100 border border-gray-300 rounded-md p-1 w-full focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"
+                            />
+                        </>
+                    ) : (
+                        <h1 className="text-3xl font-bold text-gray-800">{patient.name}</h1>
+                    )}
+
+                    {isEditing ? (
+                        <>
+                            <label htmlFor="edit-birthDate" className="sr-only">Data de Nascimento</label>
+                            <input
+                                type="date"
+                                id="edit-birthDate"
+                                value={editedPatient.birthDate || ''}
+                                onChange={(e) => {
+                                    setEditedPatient({ ...editedPatient, birthDate: e.target.value });
+                                    // Recalcula idade ao mudar data de nascimento
+                                    if (e.target.value) {
+                                        const today = new Date();
+                                        const birth = new Date(e.target.value);
+                                        let calculatedAge = today.getFullYear() - birth.getFullYear();
+                                        const m = today.getMonth() - birth.getMonth();
+                                        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                                            calculatedAge--;
+                                        }
+                                        setEditedPatient(prev => ({ ...prev, age: calculatedAge }));
+                                    }
+                                }}
+                                className="text-lg text-gray-900 bg-gray-100 border border-gray-300 rounded-md p-1 w-full focus:outline-none focus:ring-2 focus:ring-[#00C4B4] mt-2"
+                            />
+                            <label htmlFor="edit-phone" className="sr-only">Telefone</label>
+                            <input
+                                type="tel"
+                                id="edit-phone"
+                                value={editedPatient.phone || ''}
+                                onChange={(e) => setEditedPatient({ ...editedPatient, phone: e.target.value })}
+                                className="text-lg text-gray-900 bg-gray-100 border border-gray-300 rounded-md p-1 w-full focus:outline-none focus:ring-2 focus:ring-[#00C4B4] mt-2"
+                            />
+                            <label htmlFor="edit-email" className="sr-only">Email</label>
+                            <input
+                                type="email"
+                                id="edit-email"
+                                value={editedPatient.email || ''}
+                                onChange={(e) => setEditedPatient({ ...editedPatient, email: e.target.value })}
+                                className="text-lg text-gray-900 bg-gray-100 border border-gray-300 rounded-md p-1 w-full focus:outline-none focus:ring-2 focus:ring-[#00C4B4] mt-2"
+                            />
+                            <p className="text-gray-500 text-lg mt-2">Idade: {editedPatient.age} anos</p>
+                            <p className="text-gray-500 text-lg">Adicionado em: {new Date(patient.createdAt).toLocaleDateString('pt-PT')}</p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-gray-500 text-lg">Nascimento: {new Date(patient.birthDate).toLocaleDateString('pt-PT')}</p>
+                            <p className="text-gray-500 text-lg">Telefone: {patient.phone}</p>
+                            <p className="text-gray-500 text-lg">Email: {patient.email}</p>
+                            <p className="text-gray-500 text-lg mt-2">Idade: {patient.age} anos</p>
+                            <p className="text-gray-500 text-lg">Adicionado em: {new Date(patient.createdAt).toLocaleDateString('pt-PT')}</p>
+                        </>
+                    )}
+
+                    {isEditing ? (
+                        <div className="flex space-x-2 mt-4">
+                            <button
+                                onClick={handleSavePatientEdits}
+                                type="button"
+                                className="bg-[#00C4B4] text-white font-semibold py-2 px-5 rounded-lg hover:bg-[#00B5A5] transition-colors duration-300 ease-in-out shadow-md"
+                            >
+                                Salvar
+                            </button>
+                            <button
+                                onClick={handleCancelEdit}
+                                type="button"
+                                className="bg-gray-400 text-white font-semibold py-2 px-5 rounded-lg hover:bg-gray-500 transition-colors duration-300 ease-in-out shadow-md"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            type="button"
+                            className="mt-4 bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors duration-300 ease-in-out shadow-md"
+                        >
+                            Editar Paciente
+                        </button>
+                    )}
 
                     {/* Botão de Apagar Paciente - OCULTADO por enquanto */}
                     {/* <button
@@ -144,12 +286,30 @@ export const PatientDetailPage: React.FC = () => {
             {/* Seção para Queixa Principal e Histórico de Saúde */}
             <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Queixa Principal</h3>
-                <p className="text-gray-700">{patient.mainComplaint || 'N/A'}</p>
+                {isEditing ? (
+                    <textarea
+                        value={editedPatient.mainComplaint || ''}
+                        onChange={(e) => setEditedPatient({ ...editedPatient, mainComplaint: e.target.value })}
+                        rows={3}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#00C4B4] focus:border-[#00C4B4] sm:text-sm bg-gray-100"
+                    ></textarea>
+                ) : (
+                    <p className="text-gray-700">{patient.mainComplaint || 'N/A'}</p>
+                )}
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Histórico de Saúde / Observações</h3>
-                <p className="text-gray-700">{patient.healthHistory || 'N/A'}</p>
+                {isEditing ? (
+                    <textarea
+                        value={editedPatient.healthHistory || ''}
+                        onChange={(e) => setEditedPatient({ ...editedPatient, healthHistory: e.target.value })}
+                        rows={4}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#00C4B4] focus:border-[#00C4B4] sm:text-sm bg-gray-100"
+                    ></textarea>
+                ) : (
+                    <p className="text-gray-700">{patient.healthHistory || 'N/A'}</p>
+                )}
             </div>
 
             {/* Seção para Anotações do Dentista com Reconhecimento de Voz */}
