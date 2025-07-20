@@ -1,6 +1,4 @@
-// pages/AgendaPage.tsx
 import React, { useState, useEffect, useMemo } from 'react';
-// Importante: Assegure-se que 'Views' e 'View' (se necessário) são importadas corretamente
 import { Calendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
@@ -8,14 +6,10 @@ import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import ptBR from 'date-fns/locale/pt-BR';
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
-import { useAppointments } from '../context/AppointmentContext';
+import { useAppointments } from '../context/AppointmentContext'; // Atualizado para usar deleteAppointment
 import { AppointmentModal } from '../components/Agenda/AppointmentModal';
-import { Appointment } from '../types/appointment';
-
-// Importe seu arquivo CSS principal se você tiver um para customizações globais
-// Se você usa apenas Tailwind, não precisa de um import CSS aqui, mas vai adicionar CSS no seu index.css ou global.css
-// import '../styles/calendar-custom.css'; // Exemplo: Crie este arquivo se precisar de CSS extra
-
+import { Appointment } from '../types/appointment'; // Certifique-se que Appointment está importado
+import { AppointmentDetailModal } from '../components/Agenda/AppointmentDetailModal'; // NOVO: Importar o modal de detalhes
 
 // Configuração para o calendário em português
 const locales = { 'pt-BR': ptBR };
@@ -33,15 +27,15 @@ minTime.setHours(8, 0, 0);
 const maxTime = new Date();
 maxTime.setHours(19, 0, 0); // 19:00 é o início do último slot visível (até 19:59)
 
-
 export const AgendaPage: React.FC = () => {
-    const { appointments, addAppointment } = useAppointments();
+    const { appointments, addAppointment, deleteAppointment } = useAppointments(); // Pegar deleteAppointment
     const [allEvents, setAllEvents] = useState<Appointment[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false); // Modal para NOVO agendamento
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false); // NOVO: Modal para DETALHES do agendamento
     const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
+    const [selectedEvent, setSelectedEvent] = useState<Appointment | null>(null); // NOVO: Armazena o evento clicado
     const [googleToken, setGoogleToken] = useState<string | null>(null);
-    // CORREÇÃO: Usamos 'View' (o tipo de uma view individual) para o estado `currentView`
-    const [currentView, setCurrentView] = useState<View>(Views.WEEK); // Define a visualização padrão como Semana
+    const [currentView, setCurrentView] = useState<View>(Views.WEEK);
 
     const fetchGoogleEvents = async (token: string) => {
         try {
@@ -64,12 +58,14 @@ export const AgendaPage: React.FC = () => {
     };
 
     useEffect(() => {
+        // Garante que o allEvents é atualizado sempre que 'appointments' muda,
+        // ou quando o token do Google muda para buscar eventos novamente
         if (googleToken) {
             fetchGoogleEvents(googleToken);
         } else {
             setAllEvents(appointments);
         }
-    }, [googleToken, appointments]);
+    }, [googleToken, appointments]); // Dependências atualizadas
 
     const login = useGoogleLogin({
         onSuccess: (tokenResponse) => {
@@ -84,15 +80,21 @@ export const AgendaPage: React.FC = () => {
     const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
         // Verifica se o slot selecionado está fora do horário permitido (08-19h)
         if (slotInfo.start.getHours() < minTime.getHours() || slotInfo.start.getHours() >= maxTime.getHours()) {
-            return; // Não permite seleção fora do horário (o >= maxTime.getHours() exclui 19:00 se o slot começar às 19h e durar 1h)
+            return; // Não permite seleção fora do horário
         }
         // Verifica se o dia selecionado é Domingo
         if (slotInfo.start.getDay() === 0) { // 0 é Domingo
-             return; // Não permite seleção no Domingo
+            return; // Não permite seleção no Domingo
         }
 
         setSelectedSlot(slotInfo);
-        setIsModalOpen(true);
+        setIsModalOpen(true); // Abre o modal de NOVO agendamento
+    };
+
+    // NOVO: Função para lidar com o clique em um evento existente
+    const handleSelectEvent = (event: Appointment) => {
+        setSelectedEvent(event); // Armazena o evento clicado
+        setIsDetailModalOpen(true); // Abre o modal de DETALHES
     };
 
     const handleSaveAppointment = async (appointmentData: Omit<Appointment, 'id'>) => {
@@ -113,36 +115,43 @@ export const AgendaPage: React.FC = () => {
                         end: { dateTime: appointmentData.end.toISOString() },
                     }),
                 });
-                fetchGoogleEvents(googleToken);
+                fetchGoogleEvents(googleToken); // Recarrega eventos do Google após adicionar
             } catch (error) {
-                    console.error("Erro ao criar evento no Google Calendar:", error);
+                console.error("Erro ao criar evento no Google Calendar:", error);
                 alert("O agendamento foi salvo na aplicação, mas falhou ao sincronizar com o Google Calendar.");
             }
         }
     };
 
-    // Função para customizar o estilo dos slots de tempo
+    // NOVO: Função para excluir um agendamento (passada para o modal de detalhes)
+    const handleDeleteEvent = (id: string) => {
+        // Adicionar lógica para excluir do Google Calendar se for um evento do Google
+        deleteAppointment(id); // Exclui do contexto
+        setIsDetailModalOpen(false); // Fecha o modal
+        alert("Agendamento excluído com sucesso!");
+    };
+
+
+    // Função para customizar o estilo dos slots de tempo (para desabilitar Domingo)
     const slotPropGetter = useMemo(() => (date: Date) => {
-        // Se a data for Domingo, desabilitar/ocultar o slot
         if (date.getDay() === 0) { // 0 é Domingo
             return {
                 style: {
-                    backgroundColor: '#f8f8f8', // Cor cinza para domingo
+                    backgroundColor: '#f8f8f8',
                     cursor: 'not-allowed',
                     opacity: 0.6,
                 },
-                className: 'rbc-day-bg rbc-off-range-bg' // Para aplicar estilos de fora do range
+                className: 'rbc-day-bg rbc-off-range-bg'
             };
         }
         return {};
     }, []);
 
-
     return (
-        <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen"> {/* Adicionado bg-gray-50 para o fundo */}
+        <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
             {/* Seção de Conectar com Google */}
             {!googleToken ? (
-                <div className="text-center mb-6 p-6 bg-white rounded-xl shadow-lg border border-gray-200"> {/* Estilo aprimorado */}
+                <div className="text-center mb-6 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
                     <h3 className="font-bold text-xl text-blue-700 mb-2">Sincronize sua Agenda Google</h3>
                     <p className="text-gray-600 mb-4">Conecte-se à sua conta Google para gerenciar seus agendamentos diretamente aqui.</p>
                     <button onClick={() => login()} className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out shadow-md">
@@ -150,19 +159,17 @@ export const AgendaPage: React.FC = () => {
                     </button>
                 </div>
             ) : (
-                <div className="text-center mb-6 p-6 bg-green-50 text-green-800 rounded-xl shadow-lg flex flex-col sm:flex-row justify-center items-center gap-4 border border-green-200"> {/* Estilo aprimorado */}
+                <div className="text-center mb-6 p-6 bg-green-50 text-green-800 rounded-xl shadow-lg flex flex-col sm:flex-row justify-center items-center gap-4 border border-green-200">
                     <p className="font-semibold text-lg">✓ Conectado ao Google Calendar</p>
-                    <button onClick={() => { setGoogleToken(null); googleLogout(); }} className="bg-red-500 text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors duration-300 ease-in-out shadow-sm">
+                    <button onClick={() => { setGoogleToken(null); googleLogout(); }} className="ml-4 bg-red-500 text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors duration-300 ease-in-out shadow-sm">
                         Desconectar
                     </button>
                 </div>
             )}
 
-            {/* Controles de Visualização (Hoje, Anterior, Próximo, Mês, Semana, Dia, Agenda) */}
             <div className="flex justify-between items-center mb-4 p-2 bg-white rounded-xl shadow-sm">
                 <h2 className="text-lg font-bold text-gray-800">Sua Agenda</h2>
             </div>
-
 
             <div className="bg-white rounded-xl shadow-lg p-2 overflow-hidden" style={{ height: 'calc(100vh - 280px)', minHeight: '500px' }}>
                 <Calendar
@@ -173,40 +180,38 @@ export const AgendaPage: React.FC = () => {
                     culture='pt-BR'
                     messages={messages}
                     selectable={true}
-                    onSelectSlot={handleSelectSlot}
-                    defaultView={Views.WEEK} // Define a visualização padrão como Semana
-                    views={[Views.WEEK, Views.DAY, Views.AGENDA]} // Visualizações permitidas (removido Mês)
-                    min={minTime} // Define a hora mínima para exibição (08:00)
-                    max={maxTime} // Define a hora máxima para exibição (19:00)
-                    step={60} // Cada slot representa 60 minutos
-                    timeslots={1} // Mostra apenas 1 slot por hora
-                    showMultiDayTimes={false} // Oculta a hora para eventos de vários dias na visualização de agenda
-                    toolbar={true} // Mantém a barra de ferramentas (navegação, mudança de view)
-                    onView={(view: View) => setCurrentView(view)} // Atualiza a view atual
-                    // Componentes personalizados para estilização
+                    onSelectSlot={handleSelectSlot} // Para criar novo agendamento
+                    onSelectEvent={handleSelectEvent} // NOVO: Para clicar em evento existente
+                    defaultView={Views.WEEK}
+                    views={[Views.WEEK, Views.DAY, Views.AGENDA]}
+                    min={minTime}
+                    max={maxTime}
+                    step={60}
+                    timeslots={1}
+                    showMultiDayTimes={false}
+                    toolbar={true}
+                    onView={(view: View) => setCurrentView(view)}
                     components={{
-                        toolbar: (toolbarProps) => { // RENOMEADO 'toolbar' PARA 'toolbarProps' PARA CLAREZA NO SCOPE
-                            // CORREÇÃO: Usamos toolbarProps.views.includes() novamente
-                            // E fazemos um 'type assertion' para dizer ao TypeScript que 'toolbarProps.views' é um array de View
+                        toolbar: (toolbarProps) => {
                             const enabledViews = toolbarProps.views as View[]; 
                             return (
-                                <div className="rbc-toolbar flex flex-col sm:flex-row justify-between items-center mb-4 p-2 gap-2"> {/* Alterado para flex-col em mobile */}
+                                <div className="rbc-toolbar flex flex-col sm:flex-row justify-between items-center mb-4 p-2 gap-2">
                                     <span className="rbc-btn-group flex gap-2">
                                         <button type="button" onClick={() => toolbarProps.onNavigate('PREV')} className="bg-gray-200 text-gray-700 py-1 px-3 rounded text-sm hover:bg-gray-300">Anterior</button>
                                         <button type="button" onClick={() => toolbarProps.onNavigate('TODAY')} className="bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600">Hoje</button>
                                         <button type="button" onClick={() => toolbarProps.onNavigate('NEXT')} className="bg-gray-200 text-gray-700 py-1 px-3 rounded text-sm hover:bg-gray-300">Próximo</button>
                                     </span>
-                                    <span className="rbc-toolbar-label font-semibold text-gray-800 text-lg sm:my-0 my-2"> {/* Adicionado my-2 para espaçamento em mobile */}
-                                        {toolbarProps.label} {/* Ex: "Julho 2025" ou "20 Jul - 26 Jul" */}
+                                    <span className="rbc-toolbar-label font-semibold text-gray-800 text-lg sm:my-0 my-2">
+                                        {toolbarProps.label}
                                     </span>
                                     <span className="rbc-btn-group flex gap-2">
-                                        {enabledViews.includes(Views.WEEK) && ( // CORREÇÃO FINAL AQUI
+                                        {enabledViews.includes(Views.WEEK) && (
                                             <button type="button" onClick={() => toolbarProps.onView(Views.WEEK)} className={`py-1 px-3 rounded text-sm ${currentView === Views.WEEK ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>Semana</button>
                                         )}
-                                        {enabledViews.includes(Views.DAY) && ( // CORREÇÃO FINAL AQUI
+                                        {enabledViews.includes(Views.DAY) && (
                                             <button type="button" onClick={() => toolbarProps.onView(Views.DAY)} className={`py-1 px-3 rounded text-sm ${currentView === Views.DAY ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>Dia</button>
                                         )}
-                                        {enabledViews.includes(Views.AGENDA) && ( // CORREÇÃO FINAL AQUI
+                                        {enabledViews.includes(Views.AGENDA) && (
                                             <button type="button" onClick={() => toolbarProps.onView(Views.AGENDA)} className={`py-1 px-3 rounded text-sm ${currentView === Views.AGENDA ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>Agenda</button>
                                         )}
                                     </span>
@@ -214,9 +219,8 @@ export const AgendaPage: React.FC = () => {
                             );
                         },
                     }}
-                    slotPropGetter={slotPropGetter} // Aplica a lógica para Domingo
+                    slotPropGetter={slotPropGetter}
                     dayPropGetter={(date: Date) => {
-                        // Esconde a coluna de Domingo na visualização de Semana
                         if (date.getDay() === 0) { // 0 é Domingo
                             return { className: 'rbc-day-bg rbc-off-range-bg rbc-sunday-column-hidden' };
                         }
@@ -225,6 +229,7 @@ export const AgendaPage: React.FC = () => {
                 />
             </div>
 
+            {/* Modal para criar NOVO agendamento */}
             {selectedSlot && (
                 <AppointmentModal
                     isOpen={isModalOpen}
@@ -232,6 +237,16 @@ export const AgendaPage: React.FC = () => {
                     startDate={selectedSlot.start}
                     endDate={selectedSlot.end}
                     onSaveAppointment={handleSaveAppointment}
+                />
+            )}
+
+            {/* NOVO: Modal para visualizar/excluir DETALHES do agendamento */}
+            {selectedEvent && (
+                <AppointmentDetailModal
+                    isOpen={isDetailModalOpen}
+                    onRequestClose={() => setIsDetailModalOpen(false)}
+                    appointment={selectedEvent}
+                    onDelete={handleDeleteEvent} // Passa a função de exclusão
                 />
             )}
         </div>

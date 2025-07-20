@@ -1,77 +1,68 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Appointment } from '../types/appointment';
-import { v4 as uuidv4 } from 'uuid';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Adicionar a dependência para gerar IDs únicos
-// Se o terminal der um erro, execute: npm install uuid @types/uuid
+// Certifique-se de que a interface Appointment está definida em algum lugar (provavelmente em 'src/types/appointment.ts')
+// Exemplo da interface (se não tiver certeza, procure pelo seu arquivo appointment.ts)
+export interface Appointment {
+    id: string;
+    title: string;
+    start: Date;
+    end: Date;
+    // Adicione outras propriedades se o seu agendamento tiver (ex: description, patientId)
+}
 
 interface AppointmentContextType {
-  appointments: Appointment[];
-  addAppointment: (appointment: Omit<Appointment, 'id'>) => void;
+    appointments: Appointment[];
+    addAppointment: (appointment: Omit<Appointment, 'id'>) => void;
+    deleteAppointment: (id: string) => void; // NOVO: Função para excluir agendamento
 }
 
 const AppointmentContext = createContext<AppointmentContextType | undefined>(undefined);
 
-// Dados de exemplo para que a agenda não comece vazia
-const exampleAppointments: Appointment[] = [
-    {
-        id: '1',
-        title: 'Consulta de Acompanhamento - Maria Silva',
-        start: new Date(2025, 6, 19, 10, 0, 0), // Mês é 0-indexed (6 = Julho)
-        end: new Date(2025, 6, 19, 11, 0, 0),
-    },
-    {
-        id: '2',
-        title: 'Aplicação de Botox - João Pereira',
-        start: new Date(2025, 6, 21, 14, 30, 0),
-        end: new Date(2025, 6, 21, 15, 0, 0),
-    }
-];
-
-
 export const AppointmentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    try {
-      const savedAppointments = localStorage.getItem('appointments');
-      if (savedAppointments) {
-        const parsed = JSON.parse(savedAppointments);
-        // Datas são guardadas como strings, precisamos de as converter de volta para objetos Date
-        return parsed.map((appt: any) => ({
-            ...appt,
-            start: new Date(appt.start),
-            end: new Date(appt.end),
-        }));
-      }
-      return exampleAppointments; // Se não houver nada guardado, usa os exemplos
-    } catch (error) {
-      return exampleAppointments;
-    }
-  });
+    const [appointments, setAppointments] = useState<Appointment[]>(() => {
+        // Tenta carregar os agendamentos do localStorage ao iniciar
+        const savedAppointments = localStorage.getItem('medanalis_appointments');
+        if (savedAppointments) {
+            const parsed = JSON.parse(savedAppointments);
+            // Converte as strings de data de volta para objetos Date
+            return parsed.map((app: Appointment) => ({
+                ...app,
+                start: new Date(app.start),
+                end: new Date(app.end)
+            }));
+        }
+        return [];
+    });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('appointments', JSON.stringify(appointments));
-    } catch (error) {
-      console.error("Erro ao guardar agendamentos", error);
-    }
-  }, [appointments]);
+    // Salva os agendamentos no localStorage sempre que eles mudam
+    useEffect(() => {
+        localStorage.setItem('medanalis_appointments', JSON.stringify(appointments));
+    }, [appointments]);
 
-  const addAppointment = (appointment: Omit<Appointment, 'id'>) => {
-    const newAppointment = { ...appointment, id: uuidv4() };
-    setAppointments(prev => [...prev, newAppointment]);
-  };
+    const addAppointment = (appointment: Omit<Appointment, 'id'>) => {
+        const newAppointment: Appointment = {
+            ...appointment,
+            id: Date.now().toString(), // Gera um ID único
+        };
+        setAppointments((prevAppointments) => [...prevAppointments, newAppointment]);
+    };
 
-  return (
-    <AppointmentContext.Provider value={{ appointments, addAppointment }}>
-      {children}
-    </AppointmentContext.Provider>
-  );
+    // NOVO: Implementação da função de exclusão
+    const deleteAppointment = (id: string) => {
+        setAppointments((prevAppointments) => prevAppointments.filter(app => app.id !== id));
+    };
+
+    return (
+        <AppointmentContext.Provider value={{ appointments, addAppointment, deleteAppointment }}>
+            {children}
+        </AppointmentContext.Provider>
+    );
 };
 
 export const useAppointments = () => {
-  const context = useContext(AppointmentContext);
-  if (context === undefined) {
-    throw new Error('useAppointments must be used within an AppointmentProvider');
-  }
-  return context;
+    const context = useContext(AppointmentContext);
+    if (context === undefined) {
+        throw new Error('useAppointments must be used within an AppointmentProvider');
+    }
+    return context;
 };

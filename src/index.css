@@ -1,67 +1,47 @@
-/* --- Novo ajuste de responsividade para o cabeçalho dos dias (celular) --- */
-@media (max-width: 640px) {
-    /* Garante que o container do calendário não force rolagem desnecessária no corpo do app */
-    .calendar-container {
-        overflow-x: auto; /* Permite rolagem horizontal se o calendário ficar maior que a tela */
-    }
+/* --- Estilos para react-modal (AppointmentDetailModal.tsx e AppointmentModal.tsx) --- */
+.ReactModal__Overlay {
+    opacity: 0;
+    transition: opacity 200ms ease-in-out;
+}
 
-    /* Ajusta o cabeçalho principal da grade de tempo (onde ficam os dias da semana) */
-    .rbc-time-header-content {
-        flex: none !important; /* Desabilita o flex-grow padrão que pode encolher demais */
-        width: fit-content; /* Deixa a largura se ajustar ao conteúdo */
-        min-width: 500px; /* Força uma largura mínima para garantir espaço para os dias */
-        /* Você pode ajustar este min-width (por exemplo, 450px, 550px) para ver qual funciona melhor no seu celular */
-    }
+.ReactModal__Overlay--after-open{
+    opacity: 1;
+}
 
-    /* Ajusta as células individuais do cabeçalho dos dias */
-    .rbc-time-header-content .rbc-header {
-        flex-basis: auto !important; /* Permite que a base flexível seja automática */
-        flex-grow: 1 !important;     /* Permite que cresça, mas com base no auto */
-        padding: 4px 0 !important;   /* Padding vertical reduzido */
-        min-width: 0 !important;     /* Remove min-width padrão */
-        text-align: center;
-    }
+.ReactModal__Overlay--before-close{
+    opacity: 0;
+}
 
-    /* Formatação do texto dentro do cabeçalho dos dias */
-    .rbc-time-header-content .rbc-header span {
-        display: block; /* Garante que o nome do dia e o número fiquem em linhas separadas */
-        font-size: 0.75em !important; /* Reduz a fonte geral do cabeçalho */
-        line-height: 1.2; /* Espaçamento entre as linhas */
-        white-space: nowrap; /* Tenta evitar que o texto quebre no meio */
-        overflow: hidden; /* Esconde o que ultrapassar */
-        text-overflow: ellipsis; /* Adiciona "..." */
-    }
+.modal-overlay-agenda {
+    z-index: 1000; /* Garante que o modal esteja acima de tudo */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75); /* Fundo escuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    /* Ajuste específico para o dia da semana (ex: Seg, Ter) */
-    .rbc-time-header-content .rbc-header .rbc-day-of-week {
-        font-weight: bold; /* Deixa o nome do dia mais destacado */
-        font-size: 0.8em !important; /* Ajusta o tamanho da fonte */
-    }
+.modal-content-agenda {
+    outline: none; /* Remove a borda de foco padrão */
+    position: relative; /* Permite posicionar o botão de fechar */
+    max-height: 90vh; /* Aumenta um pouco a altura máxima do modal */
+    overflow-y: auto; /* Adiciona scroll se o conteúdo for muito grande */
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    padding: 20px;
+    max-width: 90%; /* Limita a largura máxima para responsividade */
+    width: 500px; /* Largura padrão */
+}
 
-    /* Ajuste específico para o número do dia (ex: 20, 21) */
-    .rbc-time-header-content .rbc-header .rbc-day-selection-cell {
-        font-size: 0.9em !important; /* Ajusta o tamanho da fonte do número do dia */
-    }
-
-    /* Ajusta a coluna de horários (08:00, 09:00...) */
-    .rbc-time-header-content .rbc-time-column {
-        min-width: 60px !important; /* Garante que a coluna de tempo tenha espaço */
-        font-size: 0.7em !important;
-        padding-right: 5px; /* Adiciona um pequeno padding para não grudar */
-    }
-
-    /* Ajusta as células de tempo no corpo do calendário */
-    .rbc-day-slot {
-        min-width: 0 !important; /* Remove min-width padrão */
-        flex-grow: 1; /* Permite que as células cresçam igualmente */
-    }
-
-    .rbc-time-slot {
-        font-size: 0.7em !important; /* Reduz fonte dos eventos/slots */
-        padding: 2px !important;
-    }
-
-    .rbc-event-content {
-        font-size: 0.65em !important; /* Fonte menor para o texto dentro do evento */
+/* Ajustes para telas muito pequenas */
+@media (max-width: 480px) {
+    .modal-content-agenda {
+        padding: 15px;
+        max-width: 95%;
     }
 }
