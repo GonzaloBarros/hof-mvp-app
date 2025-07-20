@@ -32,12 +32,12 @@ const StatCard: React.FC<{ title: string; value: number | string }> = ({ title, 
     </div>
 );
 
-export const ReportsPage: React.FC = () => {
+export const DashboardReportsPage: React.FC = () => {
     const { patients } = usePatients();
     const { analyses } = useAnalyses();
 
     // Lógica para preparar os dados do gráfico
-    const labels = [...Array(7)].map((_, i) => format(subDays(new Date(), i), 'dd/MM')).reverse();
+    const labels = [...Array(7)].map((_, i) => format(subDays(new Date(), i), 'dd/MM', { locale: ptBR })).reverse();
     const patientCounts = labels.map(label => {
         const day = parseInt(label.split('/')[0], 10);
         return patients.filter(p => new Date(p.createdAt).getDate() === day).length;
@@ -70,7 +70,7 @@ export const ReportsPage: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50 min-h-screen">
             {/* Secção de Resumo Rápido */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <StatCard title="Total de Pacientes" value={patients.length} />
