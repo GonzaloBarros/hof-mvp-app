@@ -1,94 +1,38 @@
-/* --- Estilos para o React Big Calendar --- */
-
-/* Esconde a coluna do Domingo */
-.rbc-day-bg.rbc-sunday-column-hidden {
-    display: none !important;
-}
-.rbc-header.rbc-sunday-column-hidden {
-    display: none !important;
-}
-
-/* Ajusta as células de tempo */
-.rbc-time-slot {
-    min-height: 40px; /* Ajusta a altura dos slots */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8em;
-    padding: 2px 0; /* Padding menor */
-}
-
-/* Ajusta o espaçamento dos eventos para caberem melhor */
-.rbc-event {
-    padding: 2px 5px;
-    border-radius: 4px;
-    font-size: 0.75em;
-    line-height: 1.2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal; /* Permite que o texto do evento quebre linha */
-}
-
-/* Reduz o tamanho da fonte no cabeçalho dos dias */
-.rbc-header {
-    font-size: 0.85em;
-    padding: 8px 0;
-}
-
-/* Ajuste para a coluna de tempo (00:00, 01:00...) */
-.rbc-time-header-content .rbc-time-content .rbc-allday-cell,
-.rbc-time-header-content .rbc-time-content .rbc-row-segment {
-    font-size: 0.75em; /* Reduz a fonte do 08:00, 09:00 */
-    padding-left: 5px; /* Ajuste para o texto não ficar grudado na borda */
-}
-
-/* Estilo para eventos na visualização de agenda */
-.rbc-agenda-view table.rbc-agenda-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.rbc-agenda-view table.rbc-agenda-table th,
-.rbc-agenda-view table.rbc-agenda-table td {
-    padding: 8px;
-    border: 1px solid #eee;
-    text-align: left;
-    font-size: 0.9em;
-}
-
-/* Ajuste do container principal do calendário */
-.rbc-calendar {
-    font-family: 'Roboto', sans-serif; /* Garante a fonte que você deseja */
-    height: 100%; /* Garante que o calendário preencha o div pai */
-    display: flex; /* Permite layout flexível para o calendário */
-    flex-direction: column;
-}
-
-/* Garante que o conteúdo do calendário ocupe o espaço restante */
-.rbc-time-view,
-.rbc-month-view,
-.rbc-agenda-view {
-    flex: 1;
-}
-
-/* Ajuste para as setas de navegação no toolbar */
-.rbc-btn-group button {
-    font-size: 0.8em !important; /* Tamanho da fonte dos botões de navegação */
-}
-
-/* Media Queries para responsividade adicional se necessário */
-@media (max-width: 768px) {
-    .rbc-toolbar-label {
-        font-size: 1.2em !important; /* Reduz o tamanho do label da data/semana */
+/* --- Ajustes de responsividade para o cabeçalho dos dias (celular) --- */
+@media (max-width: 640px) {
+    .rbc-header {
+        padding: 4px 0 !important; /* Reduz o padding vertical */
     }
-    .rbc-time-slot, .rbc-header {
-        font-size: 0.7em !important;
+
+    .rbc-header > div + div {
+        border-left: none !important; /* Remove as bordas entre os dias */
     }
-    .rbc-event {
-        font-size: 0.7em !important;
-        padding: 1px 3px;
+
+    .rbc-header > div {
+        flex-grow: 1; /* Faz com que as células do cabeçalho ocupem o espaço igualmente */
+        text-align: center; /* Centraliza o texto */
+        padding: 2px !important; /* Reduz o padding interno */
+        font-size: 0.75em !important; /* Reduz o tamanho da fonte */
+        white-space: nowrap; /* Evita que o texto quebre linha (pode ser removido se preferir que quebre) */
+        overflow: hidden; /* Esconde o texto que ultrapassa */
+        text-overflow: ellipsis; /* Adiciona "..." se o texto for cortado */
+        display: flex;
+        flex-direction: column; /* Organiza o dia e o número em coluna */
+        align-items: center; /* Centraliza os itens verticalmente */
+        justify-content: center; /* Centraliza os itens horizontalmente */
+        min-width: 40px; /* Garante uma largura mínima para cada coluna */
     }
-    .rbc-btn-group button {
-        padding: 6px 10px;
+
+    .rbc-header > div:first-child {
+        padding-left: 2px !important;
+    }
+
+    .rbc-header > div:last-child {
+        padding-right: 2px !important;
+    }
+
+    /* Ajuste extra fino para o número do dia */
+    .rbc-header > div > span {
+        font-size: 0.85em; /* Ligeiramente maior que o nome do dia */
     }
 }
