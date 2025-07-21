@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { Patient } from '../types/patient';
 
 interface PatientContextType {
     patients: Patient[];
-    addPatient: (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive' | 'comments'>) => void;
+    addPatient: (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive'>) => void;
+    updatePatient: (id: string, updatedData: Partial<Patient>) => void;
     updatePatientProfilePic: (id: string, profilePic: string) => void;
-    softDeletePatient: (id: string) => void;
     updatePatientComments: (id: string, comments: string) => void;
-    updatePatient: (id: string, updatedFields: Partial<Patient>) => void; // NOVO: Função para atualizar paciente
+    softDeletePatient: (id: string) => void;
 }
 
 const PatientContext = createContext<PatientContextType | undefined>(undefined);
@@ -15,67 +16,52 @@ const PatientContext = createContext<PatientContextType | undefined>(undefined);
 export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [patients, setPatients] = useState<Patient[]>(() => {
         try {
-            const savedPatients = localStorage.getItem('medanalis_patients');
-            if (savedPatients) {
-                const parsed = JSON.parse(savedPatients);
-                return parsed.map((p: Patient) => ({
-                    ...p,
-                    isActive: p.isActive === false ? false : true,
-                    comments: p.comments || ''
-                }));
-            }
+            const savedPatients = localStorage.getItem('patients');
+            return savedPatients ? JSON.parse(savedPatients) : [];
         } catch (error) {
-            console.error("Erro ao carregar pacientes do localStorage:", error);
+            console.error("Erro ao carregar pacientes do localStorage", error);
+            return [];
         }
-        return [];
     });
 
     useEffect(() => {
         try {
-            localStorage.setItem('medanalis_patients', JSON.stringify(patients));
+            localStorage.setItem('patients', JSON.stringify(patients));
         } catch (error) {
-            console.error("Erro ao salvar pacientes no localStorage:", error);
+            console.error("Erro ao salvar pacientes no localStorage", error);
         }
     }, [patients]);
 
-    const addPatient = (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive' | 'comments'>) => {
+    const addPatient = (patient: Omit<Patient, 'id' | 'createdAt' | 'isActive'>) => {
         const newPatient: Patient = {
-            id: Date.now().toString(),
-            createdAt: new Date().toISOString(),
-            isActive: true,
-            comments: '',
             ...patient,
+            id: uuidv4(),
+            createdAt: new Date().toISOString(),
+            isActive: true, // Pacientes são ativos por defeito
+            comments: '', // Inicializa comentários
         };
-        setPatients((prevPatients) => [...prevPatients, newPatient]);
+        setPatients(prev => [...prev, newPatient]);
+    };
+
+    const updatePatient = (id: string, updatedData: Partial<Patient>) => {
+        setPatients(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
     };
 
     const updatePatientProfilePic = (id: string, profilePic: string) => {
-        setPatients((prevPatients) =>
-            prevPatients.map((p) => (p.id === id ? { ...p, profilePic } : p))
-        );
-    };
-
-    const softDeletePatient = (id: string) => {
-        setPatients((prevPatients) =>
-            prevPatients.map((p) => (p.id === id ? { ...p, isActive: false } : p))
-        );
+        setPatients(prev => prev.map(p => p.id === id ? { ...p, profilePic } : p));
     };
 
     const updatePatientComments = (id: string, comments: string) => {
-        setPatients((prevPatients) =>
-            prevPatients.map((p) => (p.id === id ? { ...p, comments } : p))
-        );
+        setPatients(prev => prev.map(p => p.id === id ? { ...p, comments } : p));
     };
 
-    // NOVO: Implementação da função para atualizar paciente com campos parciais
-    const updatePatient = (id: string, updatedFields: Partial<Patient>) => {
-        setPatients((prevPatients) =>
-            prevPatients.map((p) => (p.id === id ? { ...p, ...updatedFields } : p))
-        );
+    const softDeletePatient = (id: string) => {
+        setPatients(prev => prev.map(p => p.id === id ? { ...p, isActive: false } : p));
     };
+
 
     return (
-        <PatientContext.Provider value={{ patients, addPatient, updatePatientProfilePic, softDeletePatient, updatePatientComments, updatePatient }}>
+        <PatientContext.Provider value={{ patients, addPatient, updatePatient, updatePatientProfilePic, updatePatientComments, softDeletePatient }}>
             {children}
         </PatientContext.Provider>
     );
@@ -84,7 +70,7 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
 export const usePatients = () => {
     const context = useContext(PatientContext);
     if (context === undefined) {
-        throw new Error('usePatients must be used within a PatientProvider');
+        throw new Error('usePatients deve ser usado dentro de um PatientProvider');
     }
     return context;
 };

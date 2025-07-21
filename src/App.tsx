@@ -12,6 +12,8 @@ import { PatientProvider } from './context/PatientContext';
 import { AnalysisProvider } from './context/AnalysisContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppointmentProvider } from './context/AppointmentContext';
+import { ConsentProvider } from './context/ConsentContext';
+import { TreatmentPlanProvider } from './context/TreatmentPlanContext'; // AQUI ESTÁ A IMPORTAÇÃO
 
 // Pages
 import { DashboardPage } from './pages/DashboardPage';
@@ -24,7 +26,8 @@ import { PatientDetailPage } from './pages/PatientDetailPage';
 import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
 import { AskAiPage } from './pages/AskAiPage';
 import { AgendaPage } from './pages/AgendaPage';
-import { ProfilePage } from './pages/ProfilePage'; // AQUI ESTÁ A IMPORTAÇÃO
+import { ProfilePage } from './pages/ProfilePage';
+import { ConsentPage } from './pages/ConsentPage';
 
 // Componente que protege as rotas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -45,6 +48,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         title = "Detalhes do Paciente";
     } else if (location.pathname.startsWith('/analysis/')) {
         title = "Detalhes da Análise";
+    } else if (location.pathname.startsWith('/consent/')) {
+        title = "Consentimento Informado";
     } else {
         switch (location.pathname) {
             case '/camera': title = "Captura Facial"; break;
@@ -52,7 +57,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             case '/patients': title = "Pacientes"; break;
             case '/agenda': title = "Agenda"; break;
             case '/ask-ai': title = "Pergunte para IA"; break;
-            case '/profile': title = "Perfil"; break; // AQUI ADICIONAMOS O TÍTULO
+            case '/profile': title = "Perfil"; break;
             default: title = "Dashboard";
         }
     }
@@ -83,32 +88,37 @@ function App() {
                 <PatientProvider>
                     <AppointmentProvider>
                         <AnalysisProvider>
-                            <ImageProvider>
-                                <BrowserRouter>
-                                    <Routes>
-                                        <Route path="/login" element={<LoginPage />} />
-                                        <Route path="/register" element={<RegisterPage />} />
-                                        <Route path="/*" element={
-                                            <ProtectedRoute>
-                                                <MainLayout>
-                                                    <Routes>
-                                                        <Route path="/" element={<DashboardPage />} />
-                                                        <Route path="/camera" element={<CameraCapture />} />
-                                                        <Route path="/analysis" element={<SkinAnalysis />} />
-                                                        <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
-                                                        <Route path="/patients" element={<PatientsPage />} />
-                                                        <Route path="/patient/:id" element={<PatientDetailPage />} />
-                                                        <Route path="/ask-ai" element={<AskAiPage />} />
-                                                        <Route path="/agenda" element={<AgendaPage />} />
-                                                        <Route path="/profile" element={<ProfilePage />} /> {/* AQUI ESTÁ A NOVA ROTA */}
-                                                        <Route path="*" element={<Navigate to="/" />} />
-                                                    </Routes>
-                                                </MainLayout>
-                                            </ProtectedRoute>
-                                        } />
-                                    </Routes>
-                                </BrowserRouter>
-                            </ImageProvider>
+                            <ConsentProvider>
+                                <TreatmentPlanProvider> {/* AQUI ESTÁ A CORREÇÃO */}
+                                    <ImageProvider>
+                                        <BrowserRouter>
+                                            <Routes>
+                                                <Route path="/login" element={<LoginPage />} />
+                                                <Route path="/register" element={<RegisterPage />} />
+                                                <Route path="/*" element={
+                                                    <ProtectedRoute>
+                                                        <MainLayout>
+                                                            <Routes>
+                                                                <Route path="/" element={<DashboardPage />} />
+                                                                <Route path="/camera" element={<CameraCapture />} />
+                                                                <Route path="/analysis" element={<SkinAnalysis />} />
+                                                                <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
+                                                                <Route path="/patients" element={<PatientsPage />} />
+                                                                <Route path="/patient/:id" element={<PatientDetailPage />} />
+                                                                <Route path="/ask-ai" element={<AskAiPage />} />
+                                                                <Route path="/agenda" element={<AgendaPage />} />
+                                                                <Route path="/profile" element={<ProfilePage />} />
+                                                                <Route path="/consent/:patientId" element={<ConsentPage />} />
+                                                                <Route path="*" element={<Navigate to="/" />} />
+                                                            </Routes>
+                                                        </MainLayout>
+                                                    </ProtectedRoute>
+                                                } />
+                                            </Routes>
+                                        </BrowserRouter>
+                                    </ImageProvider>
+                                </TreatmentPlanProvider>
+                            </ConsentProvider>
                         </AnalysisProvider>
                     </AppointmentProvider>
                 </PatientProvider>
