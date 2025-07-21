@@ -161,8 +161,11 @@ export const PatientDetailPage: React.FC = () => {
                         <title>Consentimento Informado - ${consent.patientName}</title>
                         <script src="https://cdn.tailwindcss.com"></script>
                     </head>
-                    <body class="p-10 font-sans">
-                        <div class="max-w-4xl mx-auto">
+                    <body class="p-10 font-sans bg-gray-50">
+                        <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+                            <div class="text-center mb-8">
+                                <button onclick="window.close()" class="bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors">Voltar</button>
+                            </div>
                             <h1 class="text-3xl font-bold mb-6 text-center">Termo de Consentimento Informado</h1>
                             <div class="bg-gray-100 p-4 rounded-lg border mb-8 text-lg">
                                 <p><strong>Paciente:</strong> ${consent.patientName}</p>

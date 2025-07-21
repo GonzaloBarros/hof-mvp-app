@@ -1,35 +1,51 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import SignatureCanvas from 'react-signature-canvas';
 import { usePatients } from '../context/PatientContext';
 import { useConsents } from '../context/ConsentContext';
 
 export const ConsentPage: React.FC = () => {
+    const { patientId } = useParams<{ patientId: string }>();
     const { patients } = usePatients();
     const { addConsent } = useConsents();
     const navigate = useNavigate();
     const sigCanvas = useRef<SignatureCanvas>(null);
 
-    const [selectedPatientId, setSelectedPatientId] = useState<string>(patients.length > 0 ? patients[0].id : '');
+    const [selectedPatientId, setSelectedPatientId] = useState<string>(patientId || '');
     const [procedureName, setProcedureName] = useState('');
+    const [error, setError] = useState<string>(''); // Estado para a mensagem de erro
+
+    useEffect(() => {
+        // Se um ID de paciente não for passado pela URL, mas existirem pacientes, seleciona o primeiro
+        if (!patientId && patients.length > 0) {
+            setSelectedPatientId(patients[0].id);
+        }
+    }, [patientId, patients]);
+
+    const patient = patients.find(p => p.id === selectedPatientId);
 
     const clearSignature = () => {
         sigCanvas.current?.clear();
     };
 
     const saveConsent = () => {
-        if (!selectedPatientId || !procedureName.trim()) {
-            alert('Por favor, selecione um paciente e descreva o procedimento.');
+        setError(''); // Limpa erros anteriores
+
+        if (!selectedPatientId) {
+            setError('Por favor, selecione um paciente.');
+            return;
+        }
+        if (!procedureName.trim()) {
+            setError('Por favor, descreva o nome do procedimento.');
             return;
         }
         if (sigCanvas.current?.isEmpty()) {
-            alert('A assinatura do paciente é obrigatória.');
+            setError('A assinatura do paciente é obrigatória.');
             return;
         }
 
-        const patient = patients.find(p => p.id === selectedPatientId);
         if (!patient) {
-            alert('Paciente não encontrado.');
+            setError('Paciente não encontrado.');
             return;
         }
 
@@ -66,8 +82,8 @@ export const ConsentPage: React.FC = () => {
                             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#00C4B4] focus:border-[#00C4B4] sm:text-sm rounded-md"
                         >
                             {patients.length > 0 ? (
-                                patients.map(patient => (
-                                    <option key={patient.id} value={patient.id}>{patient.name}</option>
+                                patients.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
                                 ))
                             ) : (
                                 <option value="">Nenhum paciente cadastrado</option>
@@ -91,7 +107,7 @@ export const ConsentPage: React.FC = () => {
                     {/* Texto do Consentimento */}
                     <div className="p-4 border border-gray-200 rounded-md bg-gray-50">
                         <p className="text-sm text-gray-600">
-                            Eu, <strong>{patients.find(p => p.id === selectedPatientId)?.name || '[Nome do Paciente]'}</strong>, portador(a) do documento de identidade [Nº do Documento], autorizo o(a) Dr(a). a realizar o procedimento de <strong>{procedureName || '[Nome do Procedimento]'}</strong>. Fui devidamente informado(a) sobre os objetivos, benefícios, riscos e alternativas do tratamento, e tive a oportunidade de esclarecer todas as minhas dúvidas. Estou ciente de que o resultado pode variar e que devo seguir todas as recomendações pós-procedimento.
+                            Eu, <strong>{patient?.name || '[Nome do Paciente]'}</strong>, portador(a) do documento de identidade [Nº do Documento], autorizo o(a) Dr(a). a realizar o procedimento de <strong>{procedureName || '[Nome do Procedimento]'}</strong>. Fui devidamente informado(a) sobre os objetivos, benefícios, riscos e alternativas do tratamento, e tive a oportunidade de esclarecer todas as minhas dúvidas. Estou ciente de que o resultado pode variar e que devo seguir todas as recomendações pós-procedimento.
                         </p>
                     </div>
 
@@ -109,6 +125,9 @@ export const ConsentPage: React.FC = () => {
                             Limpar Assinatura
                         </button>
                     </div>
+
+                    {/* Mensagem de erro que aparece se faltar algo */}
+                    {error && <p className="text-red-500 text-center font-semibold">{error}</p>}
 
                     {/* Botão de Salvar */}
                     <button
