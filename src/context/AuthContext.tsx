@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 // Definir a forma dos dados do utilizador
-interface User {
+export interface User {
     name: string;
     email: string;
     cro: string;
@@ -16,7 +16,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     login: (userData: User) => void;
     logout: () => void;
-    updateUser: (userData: Partial<User>) => void; // NOVO: Função para atualizar o perfil
+    updateUser: (userData: Partial<User>) => void; // Função para atualizar
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,7 +27,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const savedUser = localStorage.getItem('user');
             return savedUser ? JSON.parse(savedUser) : null;
         } catch (error) {
-            console.error("Erro ao carregar utilizador do localStorage", error);
             return null;
         }
     });
@@ -52,12 +51,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(null);
     };
 
-    // NOVO: Função para atualizar dados do usuário
     const updateUser = (userData: Partial<User>) => {
-        setUser(prevUser => {
-            if (!prevUser) return null; // Não atualiza se não houver usuário logado
-            return { ...prevUser, ...userData }; // Mescla os dados existentes com os novos
-        });
+        setUser(prevUser => prevUser ? { ...prevUser, ...userData } : null);
     };
 
     return (

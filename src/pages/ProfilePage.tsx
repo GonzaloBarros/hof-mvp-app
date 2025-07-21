@@ -65,7 +65,7 @@ export const ProfilePage: React.FC = () => {
             const updatedUser = { name, email, cro, phone, city, state, profilePic };
             updateUser(updatedUser);
             alert('Perfil atualizado com sucesso!');
-            navigate('/'); // NOVO: Redireciona para o Dashboard após salvar
+            navigate('/'); // Redireciona para o Dashboard após salvar
         }
     };
 
@@ -115,21 +115,21 @@ export const ProfilePage: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor='cro' className='block text-sm font-medium text-gray-700'>CRO</label>
-                                <input type="text" value={cro} onChange={e => setCro(e.target.value)} className="text-lg text-gray-900 bg-gray-100 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"/>
+                                <input type="text" id="cro" value={cro} onChange={e => setCro(e.target.value)} className="text-lg text-gray-900 bg-gray-100 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"/>
                             </div>
                             <div>
                                 <label htmlFor='phone' className='block text-sm font-medium text-gray-700'>Telefone</label>
-                                <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="text-lg text-gray-900 bg-gray-100 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"/>
+                                <input type="text" id="phone" value={phone} onChange={e => setPhone(e.target.value)} className="text-lg text-gray-900 bg-gray-100 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"/>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor='city' className='block text-sm font-medium text-gray-700'>Cidade</label>
-                                <input type="text" value={city} onChange={e => setCity(e.target.value)} className="text-lg text-gray-900 bg-gray-100 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"/>
+                                <input type="text" id="city" value={city} onChange={e => setCity(e.target.value)} className="text-lg text-gray-900 bg-gray-100 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"/>
                             </div>
                             <div>
                                 <label htmlFor='state' className='block text-sm font-medium text-gray-700'>Estado</label>
-                                <input type="text" value={state} onChange={e => setState(e.target.value)} className="text-lg text-gray-900 bg-gray-100 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"/>
+                                <input type="text" id="state" value={state} onChange={e => setState(e.target.value)} className="text-lg text-gray-900 bg-gray-100 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"/>
                             </div>
                         </div>
                     </div>

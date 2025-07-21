@@ -24,6 +24,7 @@ import { PatientDetailPage } from './pages/PatientDetailPage';
 import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
 import { AskAiPage } from './pages/AskAiPage';
 import { AgendaPage } from './pages/AgendaPage';
+import { ProfilePage } from './pages/ProfilePage'; // AQUI ESTÁ A IMPORTAÇÃO
 
 // Componente que protege as rotas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -51,6 +52,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             case '/patients': title = "Pacientes"; break;
             case '/agenda': title = "Agenda"; break;
             case '/ask-ai': title = "Pergunte para IA"; break;
+            case '/profile': title = "Perfil"; break; // AQUI ADICIONAMOS O TÍTULO
             default: title = "Dashboard";
         }
     }
@@ -73,7 +75,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 }
 
 function App() {
-    // Lendo a chave da forma correta e segura
     const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
     return (
@@ -99,6 +100,7 @@ function App() {
                                                         <Route path="/patient/:id" element={<PatientDetailPage />} />
                                                         <Route path="/ask-ai" element={<AskAiPage />} />
                                                         <Route path="/agenda" element={<AgendaPage />} />
+                                                        <Route path="/profile" element={<ProfilePage />} /> {/* AQUI ESTÁ A NOVA ROTA */}
                                                         <Route path="*" element={<Navigate to="/" />} />
                                                     </Routes>
                                                 </MainLayout>
