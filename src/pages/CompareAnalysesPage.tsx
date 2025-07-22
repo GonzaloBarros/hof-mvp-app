@@ -56,7 +56,11 @@ export const CompareAnalysesPage: React.FC = () => {
   ];
 
   if (!patient) {
-    return <div className="text-center p-8">Paciente não encontrado.</div>;
+    return (
+      <div className="text-center p-8">
+        Paciente não encontrado.
+      </div>
+    );
   }
   
 
@@ -74,7 +78,7 @@ export const CompareAnalysesPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-      {/* Botão de Voltar ao Dashboard/Consultas de Hoje */}
+      {/* Botão de Voltar à Ficha do Paciente */}
       <div className="mb-6">
         <Link to={`/patient/${patientId}`} className="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
@@ -82,11 +86,12 @@ export const CompareAnalysesPage: React.FC = () => {
         </Link>
       </div>
 
-      {/* Botão de Gerar Relatório de Evolução */}
-      <div className="text-center mb-8 no-print"> {/* Adicionamos no-print para não aparecer no PDF */}
+      {/* Botão de Gerar Relatório de Evolução (Visível no navegador, escondido na impressão) */}
+      {/* Removido print:hidden do div pai e adicionado no-print ao botão para ser controlado por JS */}
+      <div className="text-center mb-8"> 
         <button
           onClick={() => generatePdf('comparison-report', `relatorio-evolucao-${patient.name.replace(/\s/g, '-')}-${Date.now()}`, user?.name || 'Doutor', '/Logo Medanalis.png')}
-          className="bg-[#00B5A5] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#1A3C5E] transition-colors"
+          className="bg-[#00B5A5] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#1A3C5E] transition-colors no-print" // Adicionado no-print aqui
         >
           Gerar Relatório de Evolução
         </button>
@@ -109,8 +114,8 @@ export const CompareAnalysesPage: React.FC = () => {
         </div>
 
         {/* Imagens separadas para o PDF (e para visualização em impressão) */}
-        {/* Adicionamos um ID para controlar a visibilidade via JS para o PDF */}
-        <div id="static-images-for-pdf-container" className="hidden justify-around items-center gap-4 mb-8">
+        {/* Usamos print:flex para mostrar apenas na impressão */}
+        <div id="static-images-for-pdf-container" className="hidden print:flex justify-around items-center gap-4 mb-8">
           {beforeAnalysis && (
             <div className="flex flex-col items-center">
               <h3 className="font-bold text-lg mb-2">Antes</h3>
