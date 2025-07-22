@@ -1,47 +1,93 @@
-/* --- Estilos para react-modal (AppointmentDetailModal.tsx e AppointmentModal.tsx) --- */
-.ReactModal__Overlay {
-    opacity: 0;
-    transition: opacity 200ms ease-in-out;
+/* Tailwind CSS imports - keep these if you are using Tailwind */
+/* @tailwind base; */
+/* @tailwind components; */
+/* @tailwind utilities; */
+
+/* Importação do CSS do react-big-calendar */
+@import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+/* Estilos personalizados para a agenda */
+.rbc-calendar {
+  font-family: 'Inter', sans-serif;
+  height: 100%;
+  padding: 10px;
 }
 
-.ReactModal__Overlay--after-open{
-    opacity: 1;
+.rbc-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.ReactModal__Overlay--before-close{
-    opacity: 0;
+.rbc-toolbar-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin: 10px 0;
 }
 
-.modal-overlay-agenda {
-    z-index: 1000; /* Garante que o modal esteja acima de tudo */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.75); /* Fundo escuro */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.rbc-btn-group button {
+  background-color: #f0f0f0;
+  color: #555;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.modal-content-agenda {
-    outline: none; /* Remove a borda de foco padrão */
-    position: relative; /* Permite posicionar o botão de fechar */
-    max-height: 90vh; /* Aumenta um pouco a altura máxima do modal */
-    overflow-y: auto; /* Adiciona scroll se o conteúdo for muito grande */
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    padding: 20px;
-    max-width: 90%; /* Limita a largura máxima para responsividade */
-    width: 500px; /* Largura padrão */
+.rbc-btn-group button:hover {
+  background-color: #e0e0e0;
 }
 
-/* Ajustes para telas muito pequenas */
-@media (max-width: 480px) {
-    .modal-content-agenda {
-        padding: 15px;
-        max-width: 95%;
-    }
+.rbc-btn-group button.rbc-active {
+  background-color: #00C4B4;
+  color: white;
+}
+
+.rbc-header {
+  background-color: #f8f8f8;
+  padding: 8px 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.rbc-day-bg.rbc-off-range-bg {
+  background-color: #f0f0f0;
+}
+
+/* Esconder a coluna de domingo */
+.rbc-day-bg.rbc-sunday-column-hidden {
+  display: none;
+}
+.rbc-header:nth-child(1) { /* Esconde o cabeçalho de domingo */
+  display: none;
+}
+
+/* Ajustes para slots de tempo */
+.rbc-time-slot {
+  border-top: 1px solid #eee;
+}
+
+.rbc-current-time-indicator {
+  background-color: #00C4B4;
+}
+
+/* Eventos */
+.rbc-event {
+  background-color: #00C4B4;
+  border-radius: 5px;
+  padding: 2px 5px;
+  color: white;
+  font-size: 0.85em;
+  border: none;
+}
+
+.rbc-event-content {
+  white-space: normal;
 }

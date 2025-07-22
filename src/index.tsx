@@ -6,6 +6,9 @@ import reportWebVitals from './reportWebVitals';
 // Importa a configuração do i18n que criámos
 import './i18n';
 
+// Importa o CSS principal da aplicação (agora com os estilos da agenda)
+import './index.css'; 
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
