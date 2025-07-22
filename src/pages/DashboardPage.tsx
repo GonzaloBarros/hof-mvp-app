@@ -57,7 +57,8 @@ export const DashboardPage: React.FC = () => {
     });
 
     const icons = {
-        analysis: <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
+        // ÍCONE CORRIGIDO PARA "FACE SCAN"
+        analysis: <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 7.5a4 4 0 0 1 4-4h1"/><path d="M15.5 3.5a4 4 0 0 1 4 4v1"/><path d="M3.5 16.5a4 4 0 0 0 4 4h1"/><path d="M15.5 20.5a4 4 0 0 0 4-4v-1"/><path d="M8 14c.67.5 1.5 1 4 1s3.33-.5 4-1"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M2 12h20"/></svg>,
         patients: <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
         agenda: <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
     };
@@ -65,7 +66,6 @@ export const DashboardPage: React.FC = () => {
     return (
         <div className="p-6 bg-gray-50 min-h-full">
             <header className="mb-8">
-                {/* Logo Medanalis Adicionado Acima */}
                 <div className="mb-6">
                     <img
                         src="/Logo Medanalis.png" 
@@ -74,10 +74,8 @@ export const DashboardPage: React.FC = () => {
                     />
                 </div>
                 
-                {/* Saudação e Foto de Perfil */}
                 <div className="flex justify-between items-center">
                     <div>
-                        {/* Saudação atualizada para incluir "Dr." */}
                         <h1 className="text-2xl font-bold text-gray-800">Olá, Dr. {user?.name || ''}</h1>
                         <p className="text-gray-500 capitalize">{currentDate}</p>
                     </div>
