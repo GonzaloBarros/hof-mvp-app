@@ -1,0 +1,13 @@
+{
+    "dashboard": {
+        "greeting": "Hola",
+        "newAnalysis": "Nuevo Análisis",
+        "patients": "Pacientes",
+        "agenda": "Agenda",
+        "todayConsultations": "Consultas de Hoy",
+        "noConsultations": "Ninguna consulta para hoy",
+        "recentPatients": "Pacientes Recientes",
+        "search": "Buscar...",
+        "noPatientsFound": "Ningún paciente encontrado"
+    }
+}

@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
-// A linha 'import "./index.css";' foi removida para usar o Tailwind CDN e evitar conflitos.
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+
+// Importa a configuração do i18n que criámos
+import './i18n';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    {/* O Suspense mostra uma mensagem de fallback enquanto as traduções carregam */}
+    <Suspense fallback="A carregar...">
+      <App />
+    </Suspense>
   </React.StrictMode>
 );
 
