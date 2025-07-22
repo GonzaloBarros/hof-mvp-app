@@ -40,7 +40,7 @@ const InfoCard = ({ title, children, onSearchChange, searchPlaceholder }: { titl
 );
 
 export const DashboardPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(); // Inicializar o hook de tradução
   const { user } = useAuth();
   const { patients } = usePatients();
   const { appointments } = useAppointments(); // Usar o hook de agendamentos
@@ -61,6 +61,13 @@ export const DashboardPage: React.FC = () => {
     appt.start.getMonth() === today.getMonth() &&
     appt.start.getFullYear() === today.getFullYear()
   ).sort((a, b) => a.start.getTime() - b.start.getTime()); // Ordena por hora
+
+  // Função para encontrar o nome do paciente pelo ID do agendamento
+  const getPatientNameForAppointment = (patientId: string | undefined) => { // patientId agora pode ser undefined
+    if (!patientId) return ''; // Retorna vazio se não houver patientId
+    const patient = patients.find(p => p.id === patientId);
+    return patient ? patient.name : 'Paciente Desconhecido';
+  };
 
   const currentDate = new Date().toLocaleDateString(i18n.language, {
     weekday: 'long',
@@ -109,15 +116,17 @@ export const DashboardPage: React.FC = () => {
           {todayAppointments.length > 0 ? (
             <ul className="space-y-3 max-h-40 overflow-y-auto">
               {todayAppointments.map((appt) => (
-                <li key={appt.id} className="p-2 bg-gray-50 rounded-lg border border-gray-200 flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold text-gray-800">{appt.title}</p>
-                    <p className="text-sm text-gray-500">
-                      {appt.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {appt.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                  {/* Poderíamos adicionar um link para o detalhe da consulta aqui */}
-                </li>
+                <Link to={`/patient/${appt.patientId}`} key={appt.id} className="block"> {/* Link adicionado aqui */}
+                  <li className="p-2 bg-gray-50 rounded-lg border border-gray-200 flex justify-between items-center hover:bg-gray-100 cursor-pointer">
+                    <div>
+                      {/* Removendo a chamada redundante a getPatientNameForAppointment aqui */}
+                      <p className="font-semibold text-gray-800">{appt.title}</p> 
+                      <p className="text-sm text-gray-500">
+                        {appt.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {appt.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </li>
+                </Link>
               ))}
             </ul>
           ) : (
