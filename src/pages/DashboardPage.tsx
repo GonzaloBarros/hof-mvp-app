@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // Importar o hook de tradução
 import { usePatients } from '../context/PatientContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,14 +16,14 @@ const ActionButton = ({ to, icon, label }: { to: string, icon: React.ReactNode, 
 );
 
 // Componente para os cartões de informação
-const InfoCard = ({ title, children, onSearchChange, searchPlaceholder }: { title: string, children: React.ReactNode, onSearchChange?: (term: string) => void, searchPlaceholder?: string }) => (
+const InfoCard = ({ title, children, onSearchChange }: { title: string, children: React.ReactNode, onSearchChange?: (term: string) => void }) => (
     <div className="bg-white p-6 rounded-xl shadow-lg">
         <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold text-gray-800">{title}</h3>
             {onSearchChange ? (
                 <input
                     type="text"
-                    placeholder={searchPlaceholder || "Procurar..."}
+                    placeholder="Procurar..."
                     onChange={(e) => onSearchChange(e.target.value)}
                     className="w-1/2 px-3 py-1.5 border border-gray-300 rounded-full text-sm focus:ring-[#00C4B4] focus:border-[#00C4B4]"
                 />
@@ -39,8 +38,6 @@ const InfoCard = ({ title, children, onSearchChange, searchPlaceholder }: { titl
 );
 
 export const DashboardPage: React.FC = () => {
-    // AQUI ESTÁ A CORREÇÃO: Obter o 'i18n' do hook
-    const { t, i18n } = useTranslation(); 
     const { user } = useAuth();
     const { patients } = usePatients();
     const [searchTerm, setSearchTerm] = useState('');
@@ -52,7 +49,7 @@ export const DashboardPage: React.FC = () => {
             patient.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
-    const currentDate = new Date().toLocaleDateString(i18n.language, { // Usar o idioma detetado
+    const currentDate = new Date().toLocaleDateString('pt-PT', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -60,7 +57,7 @@ export const DashboardPage: React.FC = () => {
     });
 
     const icons = {
-        analysis: <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 7.5a4 4 0 0 1 4-4h1"/><path d="M15.5 3.5a4 4 0 0 1 4 4v1"/><path d="M3.5 16.5a4 4 0 0 0 4 4h1"/><path d="M15.5 20.5a4 4 0 0 0 4-4v-1"/><path d="M8 14c.67.5 1.5 1 4 1s3.33-.5 4-1"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M2 12h20"/></svg>,
+        analysis: <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
         patients: <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
         agenda: <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
     };
@@ -68,6 +65,7 @@ export const DashboardPage: React.FC = () => {
     return (
         <div className="p-6 bg-gray-50 min-h-full">
             <header className="mb-8">
+                {/* Logo Medanalis Adicionado Acima */}
                 <div className="mb-6">
                     <img
                         src="/Logo Medanalis.png" 
@@ -76,9 +74,11 @@ export const DashboardPage: React.FC = () => {
                     />
                 </div>
                 
+                {/* Saudação e Foto de Perfil */}
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-800">{t('dashboard.greeting')}, Dr. {user?.name || ''}</h1>
+                        {/* Saudação atualizada para incluir "Dr." */}
+                        <h1 className="text-2xl font-bold text-gray-800">Olá, Dr. {user?.name || ''}</h1>
                         <p className="text-gray-500 capitalize">{currentDate}</p>
                     </div>
                     <img
@@ -90,16 +90,16 @@ export const DashboardPage: React.FC = () => {
             </header>
 
             <section className="grid grid-cols-3 gap-4 mb-10">
-                <ActionButton to="/camera" icon={icons.analysis} label={t('dashboard.newAnalysis')} />
-                <ActionButton to="/patients" icon={icons.patients} label={t('dashboard.patients')} />
-                <ActionButton to="/agenda" icon={icons.agenda} label={t('dashboard.agenda')} />
+                <ActionButton to="/camera" icon={icons.analysis} label="Nova Análise" />
+                <ActionButton to="/patients" icon={icons.patients} label="Pacientes" />
+                <ActionButton to="/agenda" icon={icons.agenda} label="Agenda" />
             </section>
 
             <section className="space-y-6">
-                <InfoCard title={t('dashboard.todayConsultations')}>
-                    <p className="text-gray-400 text-center py-4">{t('dashboard.noConsultations')}</p>
+                <InfoCard title="Consultas de Hoje">
+                    <p className="text-gray-400 text-center py-4">Nenhuma consulta para hoje</p>
                 </InfoCard>
-                <InfoCard title={t('dashboard.recentPatients')} onSearchChange={setSearchTerm} searchPlaceholder={t('dashboard.search')}>
+                <InfoCard title="Pacientes" onSearchChange={setSearchTerm}>
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                         {filteredPatients.length > 0 ? (
                             filteredPatients.map(patient => (
@@ -118,7 +118,7 @@ export const DashboardPage: React.FC = () => {
                                 </Link>
                             ))
                         ) : (
-                            <p className="text-gray-400 text-center py-4">{t('dashboard.noPatientsFound')}</p>
+                            <p className="text-gray-400 text-center py-4">Nenhum paciente encontrado</p>
                         )}
                     </div>
                 </InfoCard>
