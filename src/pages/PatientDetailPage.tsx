@@ -3,9 +3,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
 import { useAnalyses } from '../context/AnalysisContext';
 import { useTreatmentPlans } from '../context/TreatmentPlanContext';
-import { useConsents } from '../context/ConsentContext'; // Importar o hook de consentimentos
+import { useConsents } from '../context/ConsentContext';
 import { Patient } from '../types/patient';
-import { Consent } from '../types/consent'; // Importar o tipo Consent
+import { Consent } from '../types/consent';
 
 // Definir o tipo para a interface de reconhecimento de fala
 declare global {
@@ -20,13 +20,13 @@ export const PatientDetailPage: React.FC = () => {
     const { patients, softDeletePatient, updatePatientComments, updatePatient } = usePatients();
     const { analyses } = useAnalyses();
     const { treatmentPlans, addTreatmentPlan } = useTreatmentPlans();
-    const { consents } = useConsents(); // Usar o novo hook
+    const { consents } = useConsents();
     const navigate = useNavigate();
 
     const patient = patients.find(p => p.id === id && (p.isActive === undefined || p.isActive === true));
     const patientAnalyses = analyses.filter(a => a.patientId === id);
     const patientTreatmentPlans = treatmentPlans.filter(p => p.patientId === id);
-    const patientConsents = consents.filter(c => c.patientId === id); // Filtrar os consentimentos do paciente
+    const patientConsents = consents.filter(c => c.patientId === id);
 
     const [comments, setComments] = useState('');
     const [isRecording, setIsRecording] = useState(false);
@@ -54,7 +54,7 @@ export const PatientDetailPage: React.FC = () => {
                 profilePic: patient.profilePic,
             });
         }
-    }, [patient]);
+    }, [patient, isEditing]);
 
 
     useEffect(() => {
@@ -125,20 +125,8 @@ export const PatientDetailPage: React.FC = () => {
 
     const handleCancelEdit = () => {
         setIsEditing(false);
-        if (patient) {
-            setEditedPatient({
-                name: patient.name,
-                age: patient.age,
-                birthDate: patient.birthDate,
-                phone: patient.phone,
-                email: patient.email,
-                mainComplaint: patient.mainComplaint,
-                healthHistory: patient.healthHistory,
-                profilePic: patient.profilePic,
-            });
-        }
     };
-
+    
     const handleCreateNewPlan = () => {
         if (patient) {
             const planTitle = prompt("Qual o nome do novo plano de tratamento? (Ex: Rejuvenescimento Terço Superior)");
@@ -151,7 +139,6 @@ export const PatientDetailPage: React.FC = () => {
         }
     };
 
-    // Função para visualizar o consentimento assinado
     const handleViewConsent = (consent: Consent) => {
         const newWindow = window.open('', '_blank');
         if (newWindow) {
@@ -238,8 +225,7 @@ export const PatientDetailPage: React.FC = () => {
                     <p className="text-gray-500 text-center py-4">Nenhum plano de tratamento iniciado para este paciente.</p>
                 )}
             </div>
-
-            {/* NOVA SECÇÃO: HISTÓRICO DE CONSENTIMENTOS */}
+            
             <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">Histórico de Consentimentos</h2>
                 {patientConsents.length > 0 ? (
@@ -262,7 +248,15 @@ export const PatientDetailPage: React.FC = () => {
             </div>
 
             <div>
-                <h2 className="text-2xl font-semibold text-gray-700 mb-4">Histórico de Análises</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-semibold text-gray-700">Histórico de Análises</h2>
+                    {/* AQUI ESTÁ O NOVO BOTÃO */}
+                    {patientAnalyses.length >= 2 && (
+                        <Link to={`/compare/${patient.id}`} className="bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700">
+                            Comparar Análises
+                        </Link>
+                    )}
+                </div>
                 {patientAnalyses.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {patientAnalyses.map(analysis => (

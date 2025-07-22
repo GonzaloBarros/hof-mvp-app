@@ -13,7 +13,7 @@ import { AnalysisProvider } from './context/AnalysisContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppointmentProvider } from './context/AppointmentContext';
 import { ConsentProvider } from './context/ConsentContext';
-import { TreatmentPlanProvider } from './context/TreatmentPlanContext'; // AQUI ESTÁ A IMPORTAÇÃO
+import { TreatmentPlanProvider } from './context/TreatmentPlanContext';
 
 // Pages
 import { DashboardPage } from './pages/DashboardPage';
@@ -28,6 +28,7 @@ import { AskAiPage } from './pages/AskAiPage';
 import { AgendaPage } from './pages/AgendaPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ConsentPage } from './pages/ConsentPage';
+import { CompareAnalysesPage } from './pages/CompareAnalysesPage'; // AQUI ESTÁ A IMPORTAÇÃO
 
 // Componente que protege as rotas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -50,6 +51,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         title = "Detalhes da Análise";
     } else if (location.pathname.startsWith('/consent/')) {
         title = "Consentimento Informado";
+    } else if (location.pathname.startsWith('/compare/')) {
+        title = "Comparar Análises"; // Título para a nova página
     } else {
         switch (location.pathname) {
             case '/camera': title = "Captura Facial"; break;
@@ -89,7 +92,7 @@ function App() {
                     <AppointmentProvider>
                         <AnalysisProvider>
                             <ConsentProvider>
-                                <TreatmentPlanProvider> {/* AQUI ESTÁ A CORREÇÃO */}
+                                <TreatmentPlanProvider>
                                     <ImageProvider>
                                         <BrowserRouter>
                                             <Routes>
@@ -109,6 +112,8 @@ function App() {
                                                                 <Route path="/agenda" element={<AgendaPage />} />
                                                                 <Route path="/profile" element={<ProfilePage />} />
                                                                 <Route path="/consent/:patientId" element={<ConsentPage />} />
+                                                                {/* AQUI ESTÁ A NOVA ROTA */}
+                                                                <Route path="/compare/:id" element={<CompareAnalysesPage />} />
                                                                 <Route path="*" element={<Navigate to="/" />} />
                                                             </Routes>
                                                         </MainLayout>
