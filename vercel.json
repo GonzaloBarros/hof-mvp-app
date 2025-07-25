@@ -1,8 +1,5 @@
 {
     "installCommand": "npm install --force --legacy-peer-deps",
-    "buildCommand": "npm run build",
-    "engines": {
-      "node": "18.x"
-    }
+    "buildCommand": "npm run build"
   }
   
