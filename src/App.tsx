@@ -28,7 +28,12 @@ import { AskAiPage } from './pages/AskAiPage';
 import { AgendaPage } from './pages/AgendaPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ConsentPage } from './pages/ConsentPage';
-import { CompareAnalysesPage } from './pages/CompareAnalysesPage'; // AQUI ESTÁ A IMPORTAÇÃO
+import { CompareAnalysesPage } from './pages/CompareAnalysesPage'; 
+
+// REMOVIDO: A importação de AnalysisCapturePage relacionada à PerfectCorp
+// import AnalysisCapturePage from './pages/AnalysisCapturePage'; // Esta linha foi removida ou ajustada
+import { GeneratedPDFsPage } from './pages/GeneratedPDFsPage'; // Mantida se ainda for usada em outro lugar
+
 
 // Componente que protege as rotas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -53,6 +58,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         title = "Consentimento Informado";
     } else if (location.pathname.startsWith('/compare/')) {
         title = "Comparar Análises"; // Título para a nova página
+    } else if (location.pathname.startsWith('/iniciar-analise')) { // Removido o título para a página de análise da PerfectCorp
+        title = "Captura Facial"; // Revertido para o título original da CameraCapture
+    } else if (location.pathname.startsWith('/resultado-analise')) { // Mantido se a página de resultados ainda existir
+        title = "Resultado da Análise";
+    } else if (location.pathname.startsWith('/pdfs-gerados')) { // Mantido se a página de PDFs ainda existir
+        title = "PDFs Gerados";
     } else {
         switch (location.pathname) {
             case '/camera': title = "Captura Facial"; break;
@@ -112,8 +123,14 @@ function App() {
                                                                 <Route path="/agenda" element={<AgendaPage />} />
                                                                 <Route path="/profile" element={<ProfilePage />} />
                                                                 <Route path="/consent/:patientId" element={<ConsentPage />} />
-                                                                {/* AQUI ESTÁ A NOVA ROTA */}
+                                                                {/* AQUI ESTÁ A ROTA DE COMPARAÇÃO (mantida) */}
                                                                 <Route path="/compare/:id" element={<CompareAnalysesPage />} />
+                                                                {/* REMOVIDO: A ROTA PARA INICIAR ANÁLISE DA PerfectCorp */}
+                                                                {/* <Route path="/iniciar-analise" element={<AnalysisCapturePage />} /> */}
+                                                                {/* AQUI ESTÁ A ROTA PARA RESULTADO DA ANÁLISE (mantida) */}
+                                                                <Route path="/resultado-analise" element={<SkinAnalysis />} /> {/* Temporário, será substituído por AnalysisResultPage */}
+                                                                {/* AQUI ESTÁ A ROTA PARA PDFS GERADOS (mantida) */}
+                                                                <Route path="/pdfs-gerados" element={<GeneratedPDFsPage />} />
                                                                 <Route path="*" element={<Navigate to="/" />} />
                                                             </Routes>
                                                         </MainLayout>
