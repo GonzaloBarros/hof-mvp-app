@@ -1,0 +1,26 @@
+[build]
+  command = "npm run build"
+  publish = "build" # Assumindo que a pasta de saída do seu build é 'build'
+
+[build.environment]
+  # Define a versão do Node.js para o ambiente de build
+  NODE_VERSION = "18"
+
+[functions]
+  node_bundler = "zisi" # Pode ser 'esbuild' ou 'zisi' dependendo da sua preferência
+  node_runtime = "nodejs18.x"
+
+[context.production]
+  command = "npm install --force && npm run build" # Comando de instalação e build para produção
+  # Ou se preferir usar legacy-peer-deps:
+  # command = "npm install --legacy-peer-deps && npm run build"
+
+[context.deploy-preview]
+  command = "npm install --force && npm run build" # Comando de instalação e build para deploy previews
+  # Ou se preferir usar legacy-peer-deps:
+  # command = "npm install --legacy-peer-deps && npm run build"
+
+[context.branch-deploy]
+  command = "npm install --force && npm run build" # Comando de instalação e build para deploys de branch
+  # Ou se preferir usar legacy-peer-deps:
+  # command = "npm install --legacy-peer-deps && npm run build"
