@@ -8,7 +8,7 @@
 
 [functions]
   node_bundler = "zisi" # Pode ser 'esbuild' ou 'zisi' dependendo da sua preferência
-  node_runtime = "nodejs18.x"
+  # node_runtime = "nodejs18.x" # Esta linha foi removida pois causava erro de sintaxe
 
 [context.production]
   command = "npm install --legacy-peer-deps && npm run build" # Comando de instalação e build para produção
