@@ -11,12 +11,10 @@
   # node_runtime = "nodejs18.x" # Esta linha foi removida pois causava erro de sintaxe
 
 [context.production]
-  command = "npm install --legacy-peer-deps && npm run build" # Comando de instalação e build para produção
-  # Se o comando acima não funcionar, tente:
-  # command = "npm install --force && npm run build"
+  command = "npm install --force && npm run build" # Comando de instalação e build para produção
 
 [context.deploy-preview]
-  command = "npm install --legacy-peer-deps && npm run build" # Comando de instalação e build para deploy previews
+  command = "npm install --force && npm run build" # Comando de instalação e build para deploy previews
 
 [context.branch-deploy]
-  command = "npm install --legacy-peer-deps && npm run build" # Comando de instalação e build para deploys de branch
+  command = "npm install --force && npm run build" # Comando de instalação e build para deploys de branch
