@@ -11,16 +11,12 @@
   node_runtime = "nodejs18.x"
 
 [context.production]
-  command = "npm install --force && npm run build" # Comando de instalação e build para produção
-  # Ou se preferir usar legacy-peer-deps:
-  # command = "npm install --legacy-peer-deps && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build" # Comando de instalação e build para produção
+  # Se o comando acima não funcionar, tente:
+  # command = "npm install --force && npm run build"
 
 [context.deploy-preview]
-  command = "npm install --force && npm run build" # Comando de instalação e build para deploy previews
-  # Ou se preferir usar legacy-peer-deps:
-  # command = "npm install --legacy-peer-deps && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build" # Comando de instalação e build para deploy previews
 
 [context.branch-deploy]
-  command = "npm install --force && npm run build" # Comando de instalação e build para deploys de branch
-  # Ou se preferir usar legacy-peer-deps:
-  # command = "npm install --legacy-peer-deps && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build" # Comando de instalação e build para deploys de branch
