@@ -1,0 +1,10 @@
+{
+    "projectId": "prj_GPFfqWXpMI0I6z1YkfiWp7iH62aI",
+    "orgId": "team_nYzDeuLyK5oZIR2pK3ejDVYZ",
+    "installCommand": "npm install --force --legacy-peer-deps",
+    "buildCommand": "npm run build",
+    "engines": {
+      "node": "18.x"
+    }
+  }
+  
