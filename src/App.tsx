@@ -9,10 +9,10 @@ import { Navigation } from './components/Layout/Navigation';
 // Context Providers
 import { ImageProvider } from './context/ImageContext';
 import { PatientProvider } from './context/PatientContext';
-import { AnalysisProvider } from './context/AnalysisProvider';
+import { AnalysisProvider } from './context/AnalysisContext'; // <-- CORRIGIDO AQUI! O nome do ficheiro era AnalysisContext.tsx
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppointmentProvider } from './context/AppointmentContext';
-import { ConsentProvider } from './context/ConsentContext'; // <-- ERRO CORRIGIDO AQUI! Removido o '='
+import { ConsentProvider } from './context/ConsentContext';
 import { TreatmentPlanProvider } from './context/TreatmentPlanContext';
 
 // Pages
