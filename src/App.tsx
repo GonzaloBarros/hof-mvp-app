@@ -23,7 +23,7 @@ import { CameraCapture } from './components/Camera/CameraCapture';
 import { SkinAnalysis } from './components/Analysis/SkinAnalysis';
 import { PatientsPage } from './pages/PatientsPage';
 import { PatientDetailPage } from './pages/PatientDetailPage';
-import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
+import { AnalysisDetailPage } = from './pages/AnalysisDetailPage';
 import { AskAiPage } from './pages/AskAiPage';
 import { AgendaPage } from './pages/AgendaPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -94,6 +94,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 }
 
 function App() {
+    // Adicionando um comentário invisível para forçar um novo deploy
+    // Última tentativa de cache-busting: 2025-07-26 20:00
     const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
     return (
