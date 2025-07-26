@@ -12,7 +12,7 @@ import { PatientProvider } from './context/PatientContext';
 import { AnalysisProvider } from './context/AnalysisProvider';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppointmentProvider } from './context/AppointmentContext';
-import { ConsentProvider } = from './context/ConsentContext';
+import { ConsentProvider } from './context/ConsentContext'; // <-- ERRO CORRIGIDO AQUI! Removido o '='
 import { TreatmentPlanProvider } from './context/TreatmentPlanContext';
 
 // Pages
@@ -112,8 +112,6 @@ function App() {
                                                 <Route path="/*" element={
                                                     <ProtectedRoute>
                                                         <MainLayout>
-                                                            {/* ESTA É UMA MENSAGEM DE TESTE PARA VERIFICAR O DEPLOY */}
-                                                            <h1 style={{ textAlign: 'center', color: 'red', marginTop: '20px' }}>VERSÃO MAIS RECENTE - TESTE DEPLOY</h1>
                                                             <Routes>
                                                                 <Route path="/" element={<DashboardPage />} />
                                                                 <Route path="/camera" element={<CameraCapture />} />
