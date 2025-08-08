@@ -3,9 +3,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePatients } from '../context/PatientContext';
 import { useAuth } from '../context/AuthContext';
-import { useAppointments } from '../context/AppointmentContext'; // Importar o hook de agendamentos
+import { useAppointments } from '../context/AppointmentContext';
 
-// Componente para os cartões de ação principais
 const ActionButton = ({ to, icon, label }: { to: string, icon: React.ReactNode, label: string }) => (
   <Link to={to} className="flex flex-col items-center space-y-2 text-center">
     <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 transition-colors text-[#00B5A5]">
@@ -17,7 +16,6 @@ const ActionButton = ({ to, icon, label }: { to: string, icon: React.ReactNode, 
   </Link>
 );
 
-// Componente para os cartões de informação
 const InfoCard = ({ title, children, onSearchChange, searchPlaceholder }: { title: string, children: React.ReactNode, onSearchChange?: (term: string) => void, searchPlaceholder?: string }) => (
   <div className="bg-white p-6 rounded-xl shadow-lg">
     <div className="flex justify-between items-center mb-4">
@@ -40,13 +38,19 @@ const InfoCard = ({ title, children, onSearchChange, searchPlaceholder }: { titl
 );
 
 export const DashboardPage: React.FC = () => {
-  const { t, i18n } = useTranslation(); // Inicializar o hook de tradução
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { patients } = usePatients();
-  const { appointments } = useAppointments(); // Usar o hook de agendamentos
+  const { appointments } = useAppointments();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filtra os pacientes para mostrar os mais recentes e os que correspondem ao termo de busca
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
+
   const filteredPatients = patients
     .slice()
     .reverse()
@@ -54,20 +58,12 @@ export const DashboardPage: React.FC = () => {
       patient.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-  // Filtra as consultas para mostrar apenas as de hoje
   const today = new Date();
   const todayAppointments = appointments.filter(appt =>
-    appt.start.getDate() === today.getDate() &&
-    appt.start.getMonth() === today.getMonth() &&
-    appt.start.getFullYear() === today.getFullYear()
-  ).sort((a, b) => a.start.getTime() - b.start.getTime()); // Ordena por hora
-
-  // Função para encontrar o nome do paciente pelo ID do agendamento
-  const getPatientNameForAppointment = (patientId: string | undefined) => { // patientId agora pode ser undefined
-    if (!patientId) return ''; // Retorna vazio se não houver patientId
-    const patient = patients.find(p => p.id === patientId);
-    return patient ? patient.name : 'Paciente Desconhecido';
-  };
+    new Date(appt.start).getDate() === today.getDate() &&
+    new Date(appt.start).getMonth() === today.getMonth() &&
+    new Date(appt.start).getFullYear() === today.getFullYear()
+  ).sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
   const currentDate = new Date().toLocaleDateString(i18n.language, {
     weekday: 'long',
@@ -83,18 +79,12 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-full">
+    // O <header> que estava aqui foi removido.
+    <div className="bg-gray-50 min-h-full">
       <header className="mb-8">
-        <div className="mb-6">
-          <img
-            src="/Logo Medanalis.png"
-            alt="Logo Medanalis"
-            className="h-8 w-auto"
-          />
-        </div>
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">{t('dashboard.greeting')}, Dr. {user?.name || ''}</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{getGreeting()}, Dr. {user?.name || ''}</h1>
             <p className="text-gray-500 capitalize">{currentDate}</p>
           </div>
           <img
@@ -116,13 +106,12 @@ export const DashboardPage: React.FC = () => {
           {todayAppointments.length > 0 ? (
             <ul className="space-y-3 max-h-40 overflow-y-auto">
               {todayAppointments.map((appt) => (
-                <Link to={`/patient/${appt.patientId}`} key={appt.id} className="block"> {/* Link adicionado aqui */}
+                <Link to={`/patient/${appt.patientId}`} key={appt.id} className="block">
                   <li className="p-2 bg-gray-50 rounded-lg border border-gray-200 flex justify-between items-center hover:bg-gray-100 cursor-pointer">
                     <div>
-                      {/* Removendo a chamada redundante a getPatientNameForAppointment aqui */}
                       <p className="font-semibold text-gray-800">{appt.title}</p> 
                       <p className="text-sm text-gray-500">
-                        {appt.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {appt.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(appt.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(appt.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </li>

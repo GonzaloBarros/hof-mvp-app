@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 import { usePatients } from '../../context/PatientContext';
 import { Appointment } from '../../types/appointment';
 
-// Estilos para o Modal para que ele apareça centrado e com um fundo translúcido
+// Estilos para o Modal
 const customStyles = {
   content: {
     top: '50%',
@@ -25,8 +25,7 @@ const customStyles = {
   },
 };
 
-// Diz ao React Modal qual é o elemento principal da nossa aplicação (importante para acessibilidade)
-Modal.setAppElement('#root');
+// A linha 'Modal.setAppElement('#root');' foi REMOVIDA daqui.
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -47,12 +46,11 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const [title, setTitle] = useState('');
   const [patientId, setPatientId] = useState<string>('');
 
-  // Garante que um paciente é pré-selecionado se a lista existir
   useEffect(() => {
-    if (patients.length > 0) {
+    if (patients.length > 0 && !patientId) {
       setPatientId(patients[0].id);
     }
-  }, [patients]);
+  }, [patients, isOpen]);
   
   const handleSave = () => {
     if (!title || !patientId) {
@@ -60,7 +58,6 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       return;
     }
     
-    // Encontra o nome do paciente para usar no título
     const patientName = patients.find(p => p.id === patientId)?.name || '';
 
     onSaveAppointment({
@@ -70,8 +67,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       patientId: patientId,
     });
     
-    // Limpa o formulário e fecha o modal
     setTitle('');
+    if (patients.length > 0) {
+      setPatientId(patients[0].id);
+    }
     onRequestClose();
   };
 
@@ -89,7 +88,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           <select
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#00C4B4] focus:border-[#00C4B4] sm:text-sm rounded-md"
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
           >
             {patients.map(patient => (
               <option key={patient.id} value={patient.id}>{patient.name}</option>
@@ -102,7 +101,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#00C4B4] focus:border-[#00C4B4] sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm"
             placeholder="Ex: Aplicação de Botox"
           />
         </div>
@@ -113,13 +112,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         <div className="flex justify-end space-x-4 pt-4">
           <button
             onClick={onRequestClose}
-            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
-            className="bg-[#00C4B4] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#00B5A5] transition-colors"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700"
           >
             Salvar Agendamento
           </button>

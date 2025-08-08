@@ -1,7 +1,7 @@
 /* Tailwind CSS imports - keep these if you are using Tailwind */
-/* @tailwind base; */
-/* @tailwind components; */
-/* @tailwind utilities; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Importação do CSS do react-big-calendar */
 @import 'react-big-calendar/lib/css/react-big-calendar.css';

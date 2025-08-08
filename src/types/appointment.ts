@@ -3,5 +3,6 @@ export interface Appointment {
   title: string;
   start: Date;
   end: Date;
-  patientId?: string; // Tornar patientId opcional
+  description?: string;
+  patientId?: string; // <-- AQUI ESTÁ A CORREÇÃO!
 }

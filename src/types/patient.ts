@@ -2,13 +2,15 @@ export interface Patient {
   id: string;
   name: string;
   age: number;
-  birthDate: string;
-  phone: string;
   email: string;
-  mainComplaint: string;
-  healthHistory: string;
-  comments?: string; // NOVO: Campo para comentários/observações adicionais
+  phone: string;
   createdAt: string;
-  profilePic?: string | null;
   isActive: boolean;
+  
+  // Adicionando os campos opcionais que faltavam
+  profilePic?: string;
+  birthDate?: string;
+  mainComplaint?: string;
+  healthHistory?: string;
+  comments?: string; // <-- AQUI ESTÁ A CORREÇÃO!
 }

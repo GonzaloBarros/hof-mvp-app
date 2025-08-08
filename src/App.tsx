@@ -9,7 +9,7 @@ import { Navigation } from './components/Layout/Navigation';
 // Context Providers
 import { ImageProvider } from './context/ImageContext';
 import { PatientProvider } from './context/PatientContext';
-import { AnalysisProvider } from './context/AnalysisContext'; // <-- CORRIGIDO AQUI! O nome do ficheiro era AnalysisContext.tsx
+import { AnalysisProvider } from './context/AnalysisContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppointmentProvider } from './context/AppointmentContext';
 import { ConsentProvider } from './context/ConsentContext';
@@ -23,16 +23,13 @@ import { CameraCapture } from './components/Camera/CameraCapture';
 import { SkinAnalysis } from './components/Analysis/SkinAnalysis';
 import { PatientsPage } from './pages/PatientsPage';
 import { PatientDetailPage } from './pages/PatientDetailPage';
-import { AnalysisDetailPage } = from './pages/AnalysisDetailPage';
+import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
 import { AskAiPage } from './pages/AskAiPage';
 import { AgendaPage } from './pages/AgendaPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ConsentPage } from './pages/ConsentPage';
 import { CompareAnalysesPage } from './pages/CompareAnalysesPage'; 
-
-// REMOVIDO: A importação de AnalysisCapturePage relacionada à PerfectCorp
-// import AnalysisCapturePage from './pages/AnalysisCapturePage'; // Esta linha foi removida ou ajustada
-import { GeneratedPDFsPage } from './pages/GeneratedPDFsPage'; // Mantida se ainda for usada em outro lugar
+import { GeneratedPDFsPage } from './pages/GeneratedPDFsPage';
 
 
 // Componente que protege as rotas
@@ -45,11 +42,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <>{children}</>;
 };
 
-// Componente para gerir o layout principal
+// Componente para gerir o layout principal (CORRIGIDO)
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
     const location = useLocation();
     let title = "Dashboard";
 
+    // Lógica para definir o título da página
     if (location.pathname.startsWith('/patient/')) {
         title = "Detalhes do Paciente";
     } else if (location.pathname.startsWith('/analysis/')) {
@@ -57,12 +55,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     } else if (location.pathname.startsWith('/consent/')) {
         title = "Consentimento Informado";
     } else if (location.pathname.startsWith('/compare/')) {
-        title = "Comparar Análises"; // Título para a nova página
-    } else if (location.pathname.startsWith('/iniciar-analise')) { // Removido o título para a página de análise da PerfectCorp
-        title = "Captura Facial"; // Revertido para o título original da CameraCapture
-    } else if (location.pathname.startsWith('/resultado-analise')) { // Mantido se a página de resultados ainda existir
+        title = "Comparar Análises";
+    } else if (location.pathname.startsWith('/iniciar-analise')) {
+        title = "Captura Facial";
+    } else if (location.pathname.startsWith('/resultado-analise')) {
         title = "Resultado da Análise";
-    } else if (location.pathname.startsWith('/pdfs-gerados')) { // Mantido se a página de PDFs ainda existir
+    } else if (location.pathname.startsWith('/pdfs-gerados')) {
         title = "PDFs Gerados";
     } else {
         switch (location.pathname) {
@@ -76,26 +74,24 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         }
     }
 
+    // Não mostra o Header nem a Navegação nas páginas de login/registo
     if (location.pathname === '/register' || location.pathname === '/login') {
         return <>{children}</>;
     }
 
-    if (location.pathname === '/') {
-        return <div className="bg-gray-50 min-h-screen pb-24"><main>{children}</main><Navigation /></div>;
-    }
-
+    // *** A CORREÇÃO ESTÁ AQUI ***
+    // A condição que removia o Header da página principal foi eliminada.
+    // Agora, todas as páginas dentro do MainLayout terão o mesmo layout.
     return (
         <div className="bg-gray-50 min-h-screen pb-24">
             <Header title={title} />
-            <main>{children}</main>
+            <main className="p-4 sm:p-6 lg:p-8">{children}</main>
             <Navigation />
         </div>
     )
 }
 
 function App() {
-    // Adicionando um comentário invisível para forçar um novo deploy
-    // Última tentativa de cache-busting: 2025-07-26 20:00
     const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
     return (
@@ -125,13 +121,8 @@ function App() {
                                                                 <Route path="/agenda" element={<AgendaPage />} />
                                                                 <Route path="/profile" element={<ProfilePage />} />
                                                                 <Route path="/consent/:patientId" element={<ConsentPage />} />
-                                                                {/* AQUI ESTÁ A ROTA DE COMPARAÇÃO (mantida) */}
                                                                 <Route path="/compare/:id" element={<CompareAnalysesPage />} />
-                                                                {/* REMOVIDO: A ROTA PARA INICIAR ANÁLISE DA PerfectCorp */}
-                                                                {/* <Route path="/iniciar-analise" element={<AnalysisCapturePage />} /> */}
-                                                                {/* AQUI ESTÁ A ROTA PARA RESULTADO DA ANÁLISE (mantida) */}
-                                                                <Route path="/resultado-analise" element={<SkinAnalysis />} /> {/* Temporário, será substituído por AnalysisResultPage */}
-                                                                {/* AQUI ESTÁ A ROTA PARA PDFS GERADOS (mantida) */}
+                                                                <Route path="/resultado-analise" element={<SkinAnalysis />} />
                                                                 <Route path="/pdfs-gerados" element={<GeneratedPDFsPage />} />
                                                                 <Route path="*" element={<Navigate to="/" />} />
                                                             </Routes>
