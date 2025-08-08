@@ -1,7 +1,7 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Patient } from '../types/patient';
 
-// Define o tipo para o valor do contexto, incluindo as novas funções
+// Define o tipo para o valor do contexto
 export interface PatientContextType {
     patients: Patient[];
     getPatientById: (id: string) => Patient | undefined;
@@ -12,7 +12,7 @@ export interface PatientContextType {
     updatePatient: (patientId: string, updatedData: Partial<Patient>) => void;
 }
 
-// Dados de exemplo para simulação, agora incluindo todos os campos
+// Dados de exemplo para simulação, usados apenas na primeira vez que a aplicação corre
 const initialPatients: Patient[] = [
     {
         id: '1',
@@ -41,7 +41,29 @@ export const usePatients = (): PatientContextType => {
 };
 
 export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [patients, setPatients] = useState<Patient[]>(initialPatients);
+    // *** PASSO 1: Carregar os dados do localStorage ao iniciar ***
+    // O estado agora é inicializado com os dados do localStorage.
+    // Se não houver nada lá, ele usa os dados de exemplo.
+    const [patients, setPatients] = useState<Patient[]>(() => {
+        try {
+            const localData = localStorage.getItem('medanalitic-patients');
+            return localData ? JSON.parse(localData) : initialPatients;
+        } catch (error) {
+            console.error("Could not parse patients from localStorage", error);
+            return initialPatients;
+        }
+    });
+
+    // *** PASSO 2: Salvar os dados no localStorage sempre que forem alterados ***
+    // Este `useEffect` corre sempre que a lista de `patients` muda.
+    useEffect(() => {
+        try {
+            localStorage.setItem('medanalitic-patients', JSON.stringify(patients));
+        } catch (error) {
+            console.error("Could not save patients to localStorage", error);
+        }
+    }, [patients]);
+
 
     const getPatientById = (id: string): Patient | undefined => {
         return patients.find(p => p.id === id);
@@ -65,7 +87,6 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
         );
     };
 
-    // Função para "deletar" (desativar) um paciente
     const softDeletePatient = (patientId: string) => {
         setPatients(prevPatients =>
             prevPatients.map(p =>
@@ -74,7 +95,6 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
         );
     };
 
-    // Função para atualizar as anotações de um paciente
     const updatePatientComments = (patientId: string, comments: string) => {
         setPatients(prevPatients =>
             prevPatients.map(p =>
@@ -83,7 +103,6 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
         );
     };
     
-    // Função genérica para atualizar qualquer dado do paciente
     const updatePatient = (patientId: string, updatedData: Partial<Patient>) => {
         setPatients(prevPatients =>
             prevPatients.map(p =>
