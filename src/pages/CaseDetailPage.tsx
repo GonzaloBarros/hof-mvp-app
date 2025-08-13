@@ -1,10 +1,8 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, User, Calendar, ClipboardList } from 'lucide-react';
-// 1. IMPORTAR O NOSSO NOVO COMPONENTE DE SLIDER
+import { ArrowLeft, User, Calendar, ClipboardList, FileText } from 'lucide-react'; // Importar o ícone FileText
 import { ImageSlider } from '../components/Case/ImageSlider';
 
-// 2. ATUALIZAR OS DADOS DE EXEMPLO PARA TER IMAGENS SEPARADAS DE 'ANTES' E 'DEPOIS'
 const mockCases = [
   {
     id: 1,
@@ -24,7 +22,6 @@ const mockCases = [
     afterImageUrl: 'https://placehold.co/800x600/00C4B4/FFFFFF?text=FOTO+DEPOIS',
     description: 'Aplicação de toxina botulínica para suavizar linhas de expressão na região da testa e glabela. Resultados visíveis após 7 dias.'
   },
-  // Adicione mais casos aqui se desejar
 ];
 
 export const CaseDetailPage: React.FC = () => {
@@ -50,7 +47,6 @@ export const CaseDetailPage: React.FC = () => {
       </Link>
 
       <div className="bg-white p-6 rounded-xl shadow-lg">
-        {/* 3. USAR O NOVO COMPONENTE ImageSlider AQUI */}
         <ImageSlider beforeImage={caseData.beforeImageUrl} afterImage={caseData.afterImageUrl} />
 
         <div className="mt-6">
@@ -67,6 +63,17 @@ export const CaseDetailPage: React.FC = () => {
             </div>
           </div>
           
+          {/* BOTÃO ADICIONADO AQUI */}
+          <div className="my-6">
+            <Link 
+              to={`/analysis-detail/${caseData.id}`}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-gray-700 rounded-lg shadow-md hover:bg-primary-dark transition-colors font-semibold"
+            >
+              <FileText size={20} />
+              Ver Relatório da Análise
+            </Link>
+          </div>
+
           <div className="border-t pt-4">
             <h2 className="text-2xl font-semibold text-gray-700 mb-2 flex items-center gap-2">
               <ClipboardList />

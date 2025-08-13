@@ -50,9 +50,12 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     if (patients.length > 0 && !patientId) {
       setPatientId(patients[0].id);
     }
-  }, [patients, isOpen]);
+    // AVISO CORRIGIDO: Adicionei 'patientId' à lista de dependências.
+    // Isso garante que o código seja executado corretamente quando o ID do paciente muda.
+  }, [patients, isOpen, patientId]);
   
   const handleSave = () => {
+    // IMPORTANTE: Não use 'alert' em apps React. Vamos mudar isso depois.
     if (!title || !patientId) {
       alert('Por favor, preencha o motivo da consulta e selecione um paciente.');
       return;
