@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Token para PerfectCorp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.2/jsencrypt.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        textarea, input { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #eee; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gerador de `id_token` para API PerfectCorp</h1>
+    <p>Use esta ferramenta para gerar o `id_token` encriptado e o `timestamp` para enviar à equipe de suporte.</p>
+
+    <label for="clientId">Client ID (API Key):</label>
+    <input type="text" id="clientId" value="Dpea5i5qQMeOJeHLDR6X3uFi2L97RYAU">
+
+    <label for="clientSecret">Client Secret (A chave que começa com "-----BEGIN PUBLIC KEY-----"):</label>
+    <textarea id="clientSecret" rows="8"></textarea>
+
+    <button onclick="gerarToken()">Gerar Token</button>
+
+    <h2>Resultados para Enviar:</h2>
+    <p><strong>Timestamp usado:</strong></p>
+    <pre id="timestamp-result">Aguardando geração...</pre>
+    
+    <p><strong>`id_token` Gerado (Encriptado):</strong></p>
+    <pre id="token-result">Aguardando geração...</pre>
+</div>
+
+<script>
+    // Função que será chamada quando o botão for clicado
+    function gerarToken() {
+        // 1. Pega os valores dos campos de texto
+        const clientId = document.getElementById('clientId').value;
+        const clientSecret = document.getElementById('clientSecret').value;
+
+        // Verifica se a chave secreta foi inserida
+        if (!clientSecret || !clientId) {
+            alert('Por favor, preencha o Client ID e a Client Secret.');
+            return;
+        }
+
+        // 2. Gera o timestamp (data e hora atual em milissegundos)
+        const timestamp = new Date().getTime();
+        
+        // 3. Monta o texto que será encriptado (payload)
+        const payload = `client_id=${clientId}&timestamp=${timestamp}`;
+
+        // 4. Encripta o texto usando a biblioteca JSEncrypt
+        try {
+            const encrypt = new JSEncrypt();
+            encrypt.setPublicKey(clientSecret); // Usa a chave secreta como chave pública
+            const encryptedToken = encrypt.encrypt(payload);
+
+            if (encryptedToken) {
+                // 5. Mostra os resultados na tela
+                document.getElementById('timestamp-result').textContent = timestamp;
+                document.getElementById('token-result').textContent = encryptedToken;
+            } else {
+                // Se a encriptação falhar (geralmente por causa da chave), mostra um erro
+                alert('Falha na encriptação. Verifique se a Client Secret está no formato correto (-----BEGIN PUBLIC KEY-----...).');
+            }
+        } catch (error) {
+            alert('Ocorreu um erro durante a encriptação: ' + error.message);
+        }
+    }
+</script>
+
+</body>
+</html>

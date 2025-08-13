@@ -21,7 +21,8 @@ const FaceOutline = () => (
 
 export const CameraCapture: React.FC = () => {
     const { stream, isActive, error, startCamera, stopCamera, captureImage } = useCamera();
-    const { setCapturedImage } = useImage();
+    // CORREÇÃO AQUI: Renomeado para corresponder ao ImageContext
+    const { setImageData } = useImage(); 
     const navigate = useNavigate();
     const videoRef = useRef<HTMLVideoElement>(null);
     const [showInitialScreen, setShowInitialScreen] = useState(true);
@@ -50,9 +51,10 @@ export const CameraCapture: React.FC = () => {
     const handleCapture = () => {
         const imageData = captureImage(videoRef);
         if (imageData) {
-            setCapturedImage(imageData);
+            // CORREÇÃO AQUI: Renomeado para corresponder ao ImageContext
+            setImageData(imageData);
             stopCamera();
-            navigate('/analysis');
+            navigate('/analysis'); // Este componente antigo ainda navega para /analysis
         }
     };
 
@@ -61,20 +63,20 @@ export const CameraCapture: React.FC = () => {
             {/* Estado: Inicial (Antes de ligar a câmara) */}
             {showInitialScreen && (
                  <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
-                    {/* O fundo cinzento agora está aqui para o estado inicial */}
-                    <div className="absolute inset-0 bg-gray-800"></div>
-                    <FaceOutline />
-                    <div className="absolute bottom-24 flex items-center justify-center w-full z-20">
-                        <button onClick={handleStartCamera} className="bg-[#00C4B4] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg">
-                            Iniciar Câmera
-                        </button>
-                    </div>
-                    {error && (
-                        <div className="absolute top-10 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-20">
-                            {error}
-                        </div>
-                    )}
-                </div>
+                     {/* O fundo cinzento agora está aqui para o estado inicial */}
+                     <div className="absolute inset-0 bg-gray-800"></div>
+                     <FaceOutline />
+                     <div className="absolute bottom-24 flex items-center justify-center w-full z-20">
+                         <button onClick={handleStartCamera} className="bg-[#00C4B4] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg">
+                             Iniciar Câmera
+                         </button>
+                     </div>
+                     {error && (
+                         <div className="absolute top-10 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-20">
+                             {error}
+                         </div>
+                     )}
+                 </div>
             )}
 
             {/* Estado: Câmara Ativa */}

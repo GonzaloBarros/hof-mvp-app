@@ -1,0 +1,17 @@
+{
+  "name": "perfectcorp-auth-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "express": "^5.1.0",
+    "jsencrypt": "^3.5.4"
+  }
+}

@@ -28,8 +28,8 @@ export const Navigation: React.FC = () => {
     const navItems = [
         { path: '/', label: 'Painel', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg> },
         { path: '/patients', label: 'Pacientes', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
-        // ÍCONE "ANÁLISE" DA BARRA DE NAVEGAÇÃO ATUALIZADO AQUI
-        { path: '/camera', label: 'Análise', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 7.5a4 4 0 0 1 4-4h1"/><path d="M15.5 3.5a4 4 0 0 1 4 4v1"/><path d="M3.5 16.5a4 4 0 0 0 4 4h1"/><path d="M15.5 20.5a4 4 0 0 0 4-4v-1"/><path d="M8 14c.67.5 1.5 1 4 1s3.33-.5 4-1"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M2 12h20"/></svg> },
+        // CORRIGIDO: Agora aponta para a nova página da câmara
+        { path: '/capture-flow', label: 'Análise', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 7.5a4 4 0 0 1 4-4h1"/><path d="M15.5 3.5a4 4 0 0 1 4 4v1"/><path d="M3.5 16.5a4 4 0 0 0 4 4h1"/><path d="M15.5 20.5a4 4 0 0 0 4-4v-1"/><path d="M8 14c.67.5 1.5 1 4 1s3.33-.5 4-1"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M2 12h20"/></svg> },
         { path: '/agenda', label: 'Agenda', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg> },
         { path: '/profile', label: 'Perfil', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> }
     ];
@@ -52,7 +52,7 @@ export const Navigation: React.FC = () => {
                         </div>
                         <div className="flex items-center space-x-3">
                             <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Nova Análise</span>
-                            <Link to="/camera" onClick={() => setIsFabMenuOpen(false)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.analysis}</Link>
+                            <Link to="/capture-flow" onClick={() => setIsFabMenuOpen(false)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg text-[#00C4B4]">{fabIcons.analysis}</Link>
                         </div>
                         <div className="flex items-center space-x-3">
                             <span className="bg-white p-2 rounded-lg shadow-md text-gray-700 font-semibold">Novo Paciente</span>
@@ -77,14 +77,16 @@ export const Navigation: React.FC = () => {
                     <div className="flex justify-around py-1">
                         {navItems.map((item) => (
                             <Link
-                                key={item.path}
+                                key={item.path + item.label} // Adicionado label para garantir chave única
                                 to={item.path}
-                                className={`flex flex-col items-center justify-center text-center w-20 h-16 rounded-lg transition-colors ${location.pathname === item.path
+                                className={`flex flex-col items-center justify-center text-center w-20 h-16 rounded-lg transition-colors ${
+                                    // Lógica para destacar o ícone de análise também na página de pacientes
+                                    (location.pathname === item.path || (item.label === 'Análise' && location.pathname === '/patients'))
                                         ? 'text-[#00C4B4] bg-[#E8F5F4]'
                                         : 'text-gray-500 hover:text-[#00C4B4] hover:bg-gray-50'
-                                    }`}
+                                }`}
                             >
-                                <NavIcon isActive={location.pathname === item.path}>
+                                <NavIcon isActive={location.pathname === item.path || (item.label === 'Análise' && location.pathname === '/patients')}>
                                     {item.icon}
                                 </NavIcon>
                                 <span className="text-xs font-medium">{item.label}</span>

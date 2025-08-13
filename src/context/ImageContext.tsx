@@ -1,9 +1,10 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 // Define a forma dos dados do contexto
+// CORREÇÃO: Renomeado para corresponder ao que as páginas usam
 interface ImageContextType {
-    capturedImage: string | null;
-    setCapturedImage: (image: string | null) => void;
+    imageData: string | null;
+    setImageData: (image: string | null) => void;
 }
 
 // Cria o contexto com um valor padrão
@@ -15,10 +16,12 @@ interface ImageProviderProps {
 }
 
 export const ImageProvider: React.FC<ImageProviderProps> = ({ children }) => {
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    // CORREÇÃO: Renomeado para corresponder ao que as páginas usam
+    const [imageData, setImageData] = useState<string | null>(null);
 
     return (
-        <ImageContext.Provider value={{ capturedImage, setCapturedImage }}>
+        // CORREÇÃO: Renomeado para corresponder ao que as páginas usam
+        <ImageContext.Provider value={{ imageData, setImageData }}>
             {children}
         </ImageContext.Provider>
     );

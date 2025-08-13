@@ -6,6 +6,7 @@ import { useTreatmentPlans } from '../context/TreatmentPlanContext';
 import { useConsents } from '../context/ConsentContext';
 import { Patient } from '../types/patient';
 import { Consent } from '../types/consent';
+// A importação do ícone foi removida para o nosso teste.
 
 // Definir o tipo para a interface de reconhecimento de fala
 declare global {
@@ -17,7 +18,7 @@ declare global {
 
 export const PatientDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { patients, softDeletePatient, updatePatientComments, updatePatient } = usePatients();
+  const { patients, updatePatientComments, updatePatient } = usePatients();
   const { analyses } = useAnalyses();
   const { treatmentPlans, addTreatmentPlan } = useTreatmentPlans();
   const { consents } = useConsents();
@@ -78,7 +79,8 @@ export const PatientDetailPage: React.FC = () => {
     recognitionRef.current.onerror = (event: any) => {
       console.error("Erro no reconhecimento de fala:", event.error);
       setIsRecording(false);
-      alert(`Erro na gravação: ${event.error}. Verifique as permissões do microfone.`);
+      // Evitar alert() pois pode bloquear a UI
+      // alert(`Erro na gravação: ${event.error}. Verifique as permissões do microfone.`);
     };
 
     return () => {
@@ -92,19 +94,24 @@ export const PatientDetailPage: React.FC = () => {
     if (isRecording) {
       recognitionRef.current.stop();
     } else {
-      recognitionRef.current.start();
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error("Não foi possível iniciar a gravação:", error);
+      }
     }
   };
 
   const displayProfilePic = patient?.profilePic ||
-    (patientAnalyses.length > 0 ? patientAnalyses[0].image : null) ||
+    (patientAnalyses.length > 0 ? patientAnalyses[0].imageUrl : null) ||
     `https://placehold.co/120x120/E8F5F4/1A3C5E?text=${patient?.name?.charAt(0) || 'P'}`;
 
 
   const handleSaveComments = () => {
     if (patient) {
       updatePatientComments(patient.id, comments);
-      alert('Anotações salvas com sucesso!');
+      // Idealmente, usar um toast/snackbar em vez de alert
+      console.log('Anotações salvas com sucesso!');
     }
   };
 
@@ -117,9 +124,9 @@ export const PatientDetailPage: React.FC = () => {
       };
       updatePatient(patient.id, updatedPatientData);
       setIsEditing(false);
-      alert('Dados do paciente atualizados com sucesso!');
+      console.log('Dados do paciente atualizados com sucesso!');
     } else {
-      alert('Por favor, preencha todos os campos obrigatórios para salvar.');
+      console.error('Por favor, preencha todos os campos obrigatórios para salvar.');
     }
   };
 
@@ -127,7 +134,6 @@ export const PatientDetailPage: React.FC = () => {
     setIsEditing(false);
   };
   
-
   const handleCreateNewPlan = () => {
     if (patient) {
       const planTitle = prompt("Qual o nome do novo plano de tratamento? (Ex: Rejuvenescimento Terço Superior)");
@@ -178,7 +184,7 @@ export const PatientDetailPage: React.FC = () => {
   if (!patient) {
     return (
       <div className="text-center p-8 bg-gray-50 min-h-screen flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold text-red-600 mb-4">Paciente não encontrado ou foi apagado</h2>
+        <h2 className="text-2xl font-bold text-red-600 mb-4">Paciente não encontrado ou foi arquivado</h2>
         <p className="text-gray-500 mb-6">O paciente que você está a tentar aceder não existe ou foi arquivado.</p>
         <Link to="/patients" className="bg-[#00C4B4] text-white font-semibold py-2 px-5 rounded-lg hover:bg-[#00B5A5] transition-colors">
           Voltar para a lista de pacientes
@@ -189,10 +195,21 @@ export const PatientDetailPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-      {/* Botão de Voltar ao Dashboard/Consultas de Hoje */}
       <div className="mb-6">
         <Link to="/" className="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
+          {/* SUBSTITUIÇÃO DO ÍCONE POR UM SVG DIRETO */}
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="h-5 w-5 mr-2" 
+            viewBox="0 0 20 20" 
+            fill="currentColor"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" 
+              clipRule="evenodd" 
+            />
+          </svg>
           Voltar ao Dashboard
         </Link>
       </div>
@@ -212,7 +229,6 @@ export const PatientDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Seção para Queixa Principal e Histórico de Saúde */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Queixa Principal</h3>
         {isEditing ? (
@@ -231,7 +247,6 @@ export const PatientDetailPage: React.FC = () => {
         )}
       </div>
 
-      {/* Seção para Anotações do Dentista com Reconhecimento de Voz */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Anotações do Dentista</h3>
         <div className="relative">
@@ -251,9 +266,9 @@ export const PatientDetailPage: React.FC = () => {
             aria-label={isRecording ? "Parar gravação" : "Iniciar gravação por voz"}
           >
             {isRecording ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="6" width="12" height="12"></rect></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="6" width="12" height="12"></rect></svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
             )}
           </button>
         </div>
@@ -265,7 +280,6 @@ export const PatientDetailPage: React.FC = () => {
         </button>
       </div>
 
-      {/* NOVA SECÇÃO: PLANOS DE TRATAMENTO */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold text-gray-700">Planos de Tratamento</h2>
@@ -289,7 +303,6 @@ export const PatientDetailPage: React.FC = () => {
         )}
       </div>
 
-      {/* NOVA SECÇÃO: HISTÓRICO DE CONSENTIMENTOS */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">Histórico de Consentimentos</h2>
         {patientConsents.length > 0 ? (
@@ -314,7 +327,6 @@ export const PatientDetailPage: React.FC = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold text-gray-700">Histórico de Análises</h2>
-          {/* AQUI ESTÁ O NOVO BOTÃO */}
           {patientAnalyses.length >= 2 && (
             <Link to={`/compare/${patient.id}`} className="bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700">
               Comparar Análises
@@ -324,19 +336,16 @@ export const PatientDetailPage: React.FC = () => {
         {patientAnalyses.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {patientAnalyses.map(analysis => (
-              <Link to={`/analysis/${analysis.id}`} key={analysis.id}>
+              <Link to={`/analysis-detail`} state={{ result: analysis.data }} key={analysis.id}>
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden group cursor-pointer h-full flex flex-col">
-                  <img src={analysis.image} alt={`Análise de ${new Date(analysis.createdAt).toLocaleDateString()}`} className="w-full h-48 object-cover group-hover:opacity-75 transition-opacity" />
+                  <img src={analysis.imageUrl} alt={`Análise de ${new Date(analysis.createdAt).toLocaleDateString()}`} className="w-full h-48 object-cover group-hover:opacity-75 transition-opacity" />
                   <div className="p-4 flex flex-col flex-grow">
                     <p className="font-semibold text-gray-800">Análise</p>
                     <p className="text-sm text-gray-500 mb-3">
                       {new Date(analysis.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })}
                     </p>
-                    <div className="border-t border-gray-200 pt-3 mt-auto text-xs space-y-1">
-                      <div className="flex justify-between"><span>Rugas:</span> <span className="font-bold">{analysis.skinProblems.wrinkles.severity}</span></div>
-                      <div className="flex justify-between"><span>Manchas:</span> <span className="font-bold">{analysis.skinProblems.darkSpots.severity}</span></div>
-                      <div className="flex justify-between"><span>Poros:</span> <span className="font-bold">{analysis.skinProblems.pores.severity}</span></div>
-                      <div className="flex justify-between"><span>Acne:</span> <span className="font-bold">{analysis.skinProblems.acne.severity}</span></div>
+                    <div className="border-t border-gray-200 pt-3 mt-auto text-xs text-gray-400">
+                      Clique para ver detalhes
                     </div>
                   </div>
                 </div>

@@ -19,8 +19,6 @@ import { TreatmentPlanProvider } from './context/TreatmentPlanContext';
 import { DashboardPage } from './pages/DashboardPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { LoginPage } from './pages/LoginPage';
-import { CameraCapture } from './components/Camera/CameraCapture';
-import { SkinAnalysis } from './components/Analysis/SkinAnalysis';
 import { PatientsPage } from './pages/PatientsPage';
 import { PatientDetailPage } from './pages/PatientDetailPage';
 import { AnalysisDetailPage } from './pages/AnalysisDetailPage';
@@ -28,9 +26,10 @@ import { AskAiPage } from './pages/AskAiPage';
 import { AgendaPage } from './pages/AgendaPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ConsentPage } from './pages/ConsentPage';
-import { CompareAnalysesPage } from './pages/CompareAnalysesPage'; 
+import { CompareAnalysesPage } from './pages/CompareAnalysesPage';
 import { GeneratedPDFsPage } from './pages/GeneratedPDFsPage';
-
+import { CameraCaptureReviewPage } from './pages/CameraCaptureReviewPage';
+import { AssociatePatientPage } from './pages/AssociatePatientPage';
 
 // Componente que protege as rotas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -50,22 +49,18 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     // Lógica para definir o título da página
     if (location.pathname.startsWith('/patient/')) {
         title = "Detalhes do Paciente";
-    } else if (location.pathname.startsWith('/analysis/')) {
+    } else if (location.pathname.startsWith('/analysis-detail/')) {
         title = "Detalhes da Análise";
     } else if (location.pathname.startsWith('/consent/')) {
         title = "Consentimento Informado";
     } else if (location.pathname.startsWith('/compare/')) {
         title = "Comparar Análises";
-    } else if (location.pathname.startsWith('/iniciar-analise')) {
+    } else if (location.pathname.startsWith('/capture-flow')) {
         title = "Captura Facial";
-    } else if (location.pathname.startsWith('/resultado-analise')) {
-        title = "Resultado da Análise";
-    } else if (location.pathname.startsWith('/pdfs-gerados')) {
-        title = "PDFs Gerados";
+    } else if (location.pathname.startsWith('/associate-patient')) {
+        title = "Associar à Paciente";
     } else {
         switch (location.pathname) {
-            case '/camera': title = "Captura Facial"; break;
-            case '/analysis': title = "Nova Análise"; break;
             case '/patients': title = "Pacientes"; break;
             case '/agenda': title = "Agenda"; break;
             case '/ask-ai': title = "Pergunte para IA"; break;
@@ -79,9 +74,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         return <>{children}</>;
     }
 
-    // *** A CORREÇÃO ESTÁ AQUI ***
-    // A condição que removia o Header da página principal foi eliminada.
-    // Agora, todas as páginas dentro do MainLayout terão o mesmo layout.
     return (
         <div className="bg-gray-50 min-h-screen pb-24">
             <Header title={title} />
@@ -112,9 +104,9 @@ function App() {
                                                         <MainLayout>
                                                             <Routes>
                                                                 <Route path="/" element={<DashboardPage />} />
-                                                                <Route path="/camera" element={<CameraCapture />} />
-                                                                <Route path="/analysis" element={<SkinAnalysis />} />
-                                                                <Route path="/analysis/:id" element={<AnalysisDetailPage />} />
+                                                                <Route path="/capture-flow" element={<CameraCaptureReviewPage />} />
+                                                                <Route path="/associate-patient" element={<AssociatePatientPage />} />
+                                                                <Route path="/analysis-detail" element={<AnalysisDetailPage />} />
                                                                 <Route path="/patients" element={<PatientsPage />} />
                                                                 <Route path="/patient/:id" element={<PatientDetailPage />} />
                                                                 <Route path="/ask-ai" element={<AskAiPage />} />
@@ -122,7 +114,6 @@ function App() {
                                                                 <Route path="/profile" element={<ProfilePage />} />
                                                                 <Route path="/consent/:patientId" element={<ConsentPage />} />
                                                                 <Route path="/compare/:id" element={<CompareAnalysesPage />} />
-                                                                <Route path="/resultado-analise" element={<SkinAnalysis />} />
                                                                 <Route path="/pdfs-gerados" element={<GeneratedPDFsPage />} />
                                                                 <Route path="*" element={<Navigate to="/" />} />
                                                             </Routes>

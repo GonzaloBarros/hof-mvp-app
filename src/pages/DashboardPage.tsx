@@ -79,7 +79,6 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    // O <header> que estava aqui foi removido.
     <div className="bg-gray-50 min-h-full">
       <header className="mb-8">
         <div className="flex justify-between items-center">
@@ -96,7 +95,8 @@ export const DashboardPage: React.FC = () => {
       </header>
 
       <section className="grid grid-cols-3 gap-4 mb-10">
-        <ActionButton to="/camera" icon={icons.analysis} label={t('dashboard.newAnalysis')} />
+        {/* CORREÇÃO AQUI: O link "Nova Análise" agora aponta para o novo fluxo da câmara. */}
+        <ActionButton to="/capture-flow" icon={icons.analysis} label={t('dashboard.newAnalysis')} />
         <ActionButton to="/patients" icon={icons.patients} label={t('dashboard.patients')} />
         <ActionButton to="/agenda" icon={icons.agenda} label={t('dashboard.agenda')} />
       </section>

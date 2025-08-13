@@ -73,6 +73,8 @@ export const AgendaPage: React.FC = () => {
             alert('A ligação com o Google falhou. Por favor, tente novamente.');
         },
         scope: 'https://www.googleapis.com/auth/calendar',
+        // CORREÇÃO FINAL: Forçar o fluxo de pop-up
+        flow: 'implicit',
     });
 
     const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
@@ -162,7 +164,7 @@ export const AgendaPage: React.FC = () => {
                     onSelectSlot={handleSelectSlot}
                     onSelectEvent={handleSelectEvent}
                     defaultView={Views.WEEK}
-                    views={[Views.WEEK, Views.DAY, Views.AGENDA]}
+                    views={[Views.WEEK, 'day', 'agenda']}
                     min={minTime}
                     max={maxTime}
                     step={60}

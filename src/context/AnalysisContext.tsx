@@ -1,46 +1,38 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Analysis } from '../types/analysis';
-import { SkinAnalysisResponse } from '../services/skinAnalyzer';
+// Não precisamos mais da resposta do serviço antigo aqui.
 
 interface AnalysisContextType {
     analyses: Analysis[];
-    addAnalysis: (analysisData: SkinAnalysisResponse, patientId: string, image: string) => void;
+    getAnalysesForPatient: (patientId: string) => Analysis[];
+    addAnalysis: (analysis: Analysis) => void;
+    isLoading: boolean;
 }
 
 const AnalysisContext = createContext<AnalysisContextType | undefined>(undefined);
 
 export const AnalysisProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [analyses, setAnalyses] = useState<Analysis[]>(() => {
-        try {
-            const savedAnalyses = localStorage.getItem('analyses');
-            return savedAnalyses ? JSON.parse(savedAnalyses) : [];
-        } catch (error) {
-            console.error("Erro ao carregar análises do localStorage", error);
-            return [];
-        }
-    });
+    const [analyses, setAnalyses] = useState<Analysis[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
+    // Simulação de carregamento de dados
     useEffect(() => {
-        try {
-            localStorage.setItem('analyses', JSON.stringify(analyses));
-        } catch (error) {
-            console.error("Erro ao salvar análises no localStorage", error);
-        }
-    }, [analyses]);
+        // No futuro, aqui seria o local para carregar as análises do Firebase
+        const mockAnalyses: Analysis[] = []; // Começa vazio por agora
+        setAnalyses(mockAnalyses);
+        setIsLoading(false);
+    }, []);
 
-    const addAnalysis = (analysisData: SkinAnalysisResponse, patientId: string, image: string) => {
-        const newAnalysis: Analysis = {
-            id: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            patientId,
-            image,
-            ...analysisData,
-        };
-        setAnalyses(prevAnalyses => [...prevAnalyses, newAnalysis]);
+    const getAnalysesForPatient = (patientId: string) => {
+        return analyses.filter(a => a.patientId === patientId);
+    };
+
+    const addAnalysis = (analysis: Analysis) => {
+        setAnalyses(prev => [...prev, analysis]);
     };
 
     return (
-        <AnalysisContext.Provider value={{ analyses, addAnalysis }}>
+        <AnalysisContext.Provider value={{ analyses, getAnalysesForPatient, addAnalysis, isLoading }}>
             {children}
         </AnalysisContext.Provider>
     );
