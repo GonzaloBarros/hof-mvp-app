@@ -1,86 +1,127 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { runAiQuery } from '../services/aiService';
+import React, { useState, useRef, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Send } from 'lucide-react';
+import axios from 'axios'; // Importamos o axios para fazer a chamada ao nosso backend
 
+// Define um tipo para os nossos objectos de mensagem
 interface Message {
-    sender: 'user' | 'ai';
-    text: string;
+  text: string;
+  sender: 'user' | 'ai';
 }
 
+// Dados de análise de exemplo. No futuro, vamos buscar isto da base de dados.
+const mockAnalysisData = {
+  wrinkles: { forehead: 0.85, eye_corner: 0.75 },
+  spots: { uv_spots: 0.72, dark_spots: 0.65 },
+  texture: { pores: 0.88, smoothness: 0.5 },
+  redness: 0.4,
+};
+
 export const AskAiPage: React.FC = () => {
-  const { user } = useAuth();
-  const [prompt, setPrompt] = useState('');
-  const [conversation, setConversation] = useState<Message[]>([]);
+  const { analysisId } = useParams<{ analysisId: string }>();
+  
+  const [messages, setMessages] = useState<Message[]>([
+    { text: 'Olá! Sou o seu assistente de diagnóstico. Como posso ajudar a interpretar os resultados desta análise?', sender: 'ai' }
+  ]);
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = async () => {
-    if (!prompt.trim() || isLoading) return;
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-    const userMessage: Message = { sender: 'user', text: prompt };
-    setConversation(prev => [...prev, userMessage]);
+  // Função para enviar uma mensagem
+  const handleSendMessage = async () => {
+    if (input.trim() === '' || isLoading) return;
+
+    const userMessage: Message = { text: input, sender: 'user' };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
     setIsLoading(true);
-    setPrompt('');
 
-    // Adiciona uma mensagem de "a pensar..."
-    const thinkingMessage: Message = { sender: 'ai', text: 'A pensar...' };
-    setConversation(prev => [...prev, thinkingMessage]);
+    try {
+      // 1. FAZER A CHAMADA PARA O NOSSO BACKEND
+      // O Vercel entende que '/api/ask-ai' aponta para o ficheiro 'api/ask-ai.ts'.
+      const response = await axios.post('/api/ask-ai', {
+        question: userMessage.text,
+        analysisData: mockAnalysisData, // Enviamos a pergunta e os dados da análise
+      });
 
-    // Chama o nosso serviço de IA
-    const aiResponse = await runAiQuery(prompt);
-    const aiMessage: Message = { sender: 'ai', text: aiResponse };
-    
-    // Substitui a mensagem de "a pensar..." pela resposta final
-    setConversation(prev => [...prev.slice(0, -1), aiMessage]);
-    setIsLoading(false);
+      // 2. OBTER A RESPOSTA REAL DA IA
+      const aiResponse: Message = {
+        text: response.data.answer,
+        sender: 'ai'
+      };
+      setMessages(prev => [...prev, aiResponse]);
+
+    } catch (error) {
+      // 3. LIDAR COM ERROS
+      console.error('Erro ao comunicar com a IA:', error);
+      const errorMessage: Message = {
+        text: 'Desculpe, ocorreu um erro ao tentar comunicar com o assistente. Por favor, tente novamente mais tarde.',
+        sender: 'ai'
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      // 4. GARANTIR QUE O INDICADOR DE 'PENSANDO...' DESAPARECE
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto p-4">
-      {/* Área da Conversa */}
-      <div className="flex-grow overflow-y-auto space-y-6">
-        {conversation.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center h-full">
-                <div className="w-16 h-16 mb-4 bg-gradient-to-tr from-blue-400 to-emerald-400 rounded-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.45 4.1-4.1 1.45 4.1 1.45L12 14l1.45-4.1 4.1-1.45-4.1-1.45Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-                </div>
-                <h1 className="text-4xl font-bold text-gray-800">
-                    Olá, Doutor!
-                </h1>
-                <p className="text-xl text-gray-500 mt-2">
-                    Tudo bem? 😊 Como Medanalis AI pode te ajudar hoje?
-                </p>
-            </div>
-        ) : (
-            conversation.map((msg, index) => (
-                <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-lg px-4 py-3 rounded-2xl ${msg.sender === 'user' ? 'bg-[#00C4B4] text-white' : 'bg-gray-200 text-gray-800'}`}>
-                        <p style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</p>
-                    </div>
-                </div>
-            ))
-        )}
+    <div className="container mx-auto p-4 pt-6 bg-gray-50 min-h-screen flex flex-col h-screen">
+      <div className="flex-shrink-0">
+        <Link to={`/analysis-detail/${analysisId}`} className="flex items-center gap-2 text-primary mb-4 hover:underline font-semibold">
+          <ArrowLeft size={20} />
+          <span>Voltar para a Análise</span>
+        </Link>
+        <h1 className="text-3xl font-bold text-gray-800 mb-1">Assistente de Diagnóstico</h1>
+        <p className="text-gray-500 mb-4">Análise ID: {analysisId}</p>
       </div>
 
-      {/* Área de Input */}
-      <div className="mt-auto pt-4">
-        <div className="relative">
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Digite sua pergunta aqui..."
-            className="w-full pl-4 pr-12 py-4 bg-white border border-gray-200 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"
-            disabled={isLoading}
-          />
-          <button
-            onClick={handleSend}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#00C4B4] rounded-full flex items-center justify-center text-white hover:bg-[#00B5A5] transition-colors disabled:bg-gray-300"
-            aria-label="Enviar Pergunta"
-            disabled={isLoading}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-          </button>
+      <div className="flex-grow bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
+        <div className="flex-grow p-6 space-y-4 overflow-y-auto">
+          {messages.map((msg, index) => (
+            <div key={index} className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : ''}`}>
+              {msg.sender === 'ai' && (
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold flex-shrink-0">IA</div>
+              )}
+              <div className={`p-4 rounded-lg max-w-lg ${msg.sender === 'user' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700'}`}>
+                <p>{msg.text}</p>
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold flex-shrink-0">IA</div>
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <p className="text-gray-700 animate-pulse">Pensando...</p>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        <div className="border-t p-4 bg-white flex-shrink-0">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Digite sua pergunta aqui..."
+              className="w-full pr-12 pl-4 py-3 border rounded-full shadow-sm focus:ring-2 focus:ring-primary-light focus:outline-none"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              disabled={isLoading}
+            />
+            <button 
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary-dark disabled:bg-gray-400"
+              onClick={handleSendMessage}
+              disabled={isLoading}
+            >
+              <Send size={20} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

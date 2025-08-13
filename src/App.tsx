@@ -30,8 +30,9 @@ import { CompareAnalysesPage } from './pages/CompareAnalysesPage';
 import { GeneratedPDFsPage } from './pages/GeneratedPDFsPage';
 import { CameraCaptureReviewPage } from './pages/CameraCaptureReviewPage';
 import { AssociatePatientPage } from './pages/AssociatePatientPage';
+import { CasesPage } from './pages/CasesPage';
+import { CaseDetailPage } from './pages/CaseDetailPage';
 
-// Componente que protege as rotas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated } = useAuth();
     const location = useLocation();
@@ -41,7 +42,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <>{children}</>;
 };
 
-// Componente para gerir o layout principal (CORRIGIDO)
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
     const location = useLocation();
     let title = "Dashboard";
@@ -50,27 +50,24 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     if (location.pathname.startsWith('/patient/')) {
         title = "Detalhes do Paciente";
     } else if (location.pathname.startsWith('/analysis-detail/')) {
-        title = "Detalhes da Análise";
-    } else if (location.pathname.startsWith('/consent/')) {
-        title = "Consentimento Informado";
-    } else if (location.pathname.startsWith('/compare/')) {
-        title = "Comparar Análises";
-    } else if (location.pathname.startsWith('/capture-flow')) {
-        title = "Captura Facial";
-    } else if (location.pathname.startsWith('/associate-patient')) {
-        title = "Associar à Paciente";
+        title = "Relatório da Análise";
+    } else if (location.pathname.startsWith('/case/')) {
+        title = "Detalhe do Caso";
+    // TÍTULO PARA A NOVA PÁGINA DA IA
+    } else if (location.pathname.startsWith('/ask-ai/')) {
+        title = "Assistente de Diagnóstico";
     } else {
         switch (location.pathname) {
             case '/patients': title = "Pacientes"; break;
             case '/agenda': title = "Agenda"; break;
-            case '/ask-ai': title = "Pergunte para IA"; break;
+            case '/cases': title = "Meus Casos"; break;
             case '/profile': title = "Perfil"; break;
             default: title = "Dashboard";
         }
     }
 
-    // Não mostra o Header nem a Navegação nas páginas de login/registo
-    if (location.pathname === '/register' || location.pathname === '/login') {
+    // Não mostra o Header/Navegação em certas páginas
+    if (['/register', '/login'].includes(location.pathname) || location.pathname.startsWith('/ask-ai/')) {
         return <>{children}</>;
     }
 
@@ -104,12 +101,16 @@ function App() {
                                                         <MainLayout>
                                                             <Routes>
                                                                 <Route path="/" element={<DashboardPage />} />
+                                                                <Route path="/cases" element={<CasesPage />} />
+                                                                <Route path="/case/:id" element={<CaseDetailPage />} />
+                                                                {/* ROTA DA IA ATUALIZADA PARA ACEITAR UM ID */}
+                                                                <Route path="/ask-ai/:analysisId" element={<AskAiPage />} />
+                                                                {/* ROTA DE DETALHE DA ANÁLISE ATUALIZADA */}
+                                                                <Route path="/analysis-detail/:id" element={<AnalysisDetailPage />} />
                                                                 <Route path="/capture-flow" element={<CameraCaptureReviewPage />} />
                                                                 <Route path="/associate-patient" element={<AssociatePatientPage />} />
-                                                                <Route path="/analysis-detail" element={<AnalysisDetailPage />} />
                                                                 <Route path="/patients" element={<PatientsPage />} />
                                                                 <Route path="/patient/:id" element={<PatientDetailPage />} />
-                                                                <Route path="/ask-ai" element={<AskAiPage />} />
                                                                 <Route path="/agenda" element={<AgendaPage />} />
                                                                 <Route path="/profile" element={<ProfilePage />} />
                                                                 <Route path="/consent/:patientId" element={<ConsentPage />} />

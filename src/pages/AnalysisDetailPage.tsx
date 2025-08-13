@@ -1,52 +1,57 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-// A importação do ícone foi removida para o nosso teste.
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, MessageCircle, User, Calendar } from 'lucide-react';
+
+// Dados de exemplo para uma análise
+const mockAnalysis = {
+  id: 1,
+  patientName: 'Ana Silva',
+  date: '13 de Ago de 2025',
+  // ... aqui entrariam os dados da PerfectCorp
+};
 
 export const AnalysisDetailPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const analysisResult = location.state?.result;
-
-  const handleGoBack = () => {
-    navigate(-1); 
+  // Função para navegar para a página da IA, passando o ID da análise atual
+  const handleAskAiClick = () => {
+    navigate(`/ask-ai/${id}`);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <header className="bg-white shadow-md w-full p-4 flex items-center">
-        <button onClick={handleGoBack} className="mr-4 text-gray-600">
-          {/* SUBSTITUIÇÃO DO ÍCONE POR UM SVG DIRETO */}
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-6 w-6" 
-            viewBox="0 0 20 20" 
-            fill="currentColor"
-          >
-            <path 
-              fillRule="evenodd" 
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" 
-              clipRule="evenodd" 
-            />
-          </svg>
-        </button>
-        <h1 className="text-xl font-semibold text-gray-800">Detalhes da Análise</h1>
-      </header>
+    <div className="container mx-auto p-4 pt-6 bg-gray-50 min-h-screen">
+      <Link to="/cases" className="flex items-center gap-2 text-primary mb-6 hover:underline font-semibold">
+        <ArrowLeft size={20} />
+        <span>Voltar</span>
+      </Link>
 
-      <main className="flex-grow p-6 overflow-y-auto">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-bold mb-4">Resultado da Análise Facial</h2>
-          {analysisResult ? (
-            <pre className="bg-gray-200 p-4 rounded-md overflow-x-auto text-sm">
-              {JSON.stringify(analysisResult, null, 2)}
-            </pre>
-          ) : (
-            <p className="text-gray-600">
-              Não foram encontrados dados da análise. Por favor, volte e selecione uma análise para ver os detalhes.
-            </p>
-          )}
+      <div className="bg-white p-6 rounded-xl shadow-lg">
+        <div className="flex justify-between items-start">
+            <div>
+                <h1 className="text-3xl font-bold text-gray-800">Relatório da Análise</h1>
+                <div className="flex items-center gap-4 text-gray-500 mt-2">
+                    <span className="flex items-center gap-2"><User size={16} /> {mockAnalysis.patientName}</span>
+                    <span className="flex items-center gap-2"><Calendar size={16} /> {mockAnalysis.date}</span>
+                </div>
+            </div>
+            {/* ESTE É O NOVO BOTÃO DA IA */}
+            <button 
+                onClick={handleAskAiClick}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-gray rounded-lg shadow-md hover:bg-primary-dark transition-colors"
+            >
+                <MessageCircle size={20} />
+                <span>Insights da IA</span>
+            </button>
         </div>
-      </main>
+        
+        <div className="mt-8 border-t pt-6">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Resultados da Análise</h2>
+            <div className="text-center py-10 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">Os dados da análise da PerfectCorp serão exibidos aqui.</p>
+            </div>
+        </div>
+      </div>
     </div>
   );
 };
