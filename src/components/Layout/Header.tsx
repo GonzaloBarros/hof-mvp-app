@@ -1,7 +1,8 @@
 import React from 'react';
 
-// O caminho está a apontar para a mesma pasta, que é o correto agora.
-import medanaliticLogo from './logo.png'; 
+// CORREÇÃO: O caminho foi alterado para 'logo.png' e está a apontar
+// para o ficheiro que você encontrou na mesma pasta do componente.
+import medanaliticLogo from './logo.png';
 
 interface HeaderProps {
     title?: string;
