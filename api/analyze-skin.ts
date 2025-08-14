@@ -9,37 +9,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    console.log('API /api/analyze-skin foi chamada.');
     const { imageData } = req.body;
-
     if (!imageData) {
       return res.status(400).json({ error: 'Nenhum dado de imagem fornecido.' });
     }
     
-    console.log('Iniciando o Passo 1: Autenticação com a PerfectCorp...');
-
     const apiKey = process.env.PERFECTCORP_API_KEY;
     const publicKey = process.env.PERFECTCORP_PUBLIC_KEY;
 
-    // --- NOVO: Bloco de Depuração para Verificar as Chaves ---
-    // Este bloco vai mostrar um pedaço das chaves nos logs da Vercel para podermos confirmar.
-    console.log('--- INÍCIO DA DEPURAÇÃO DE CHAVES ---');
-    if (apiKey) {
-      console.log('Chave de API (primeiros 5 caracteres):', apiKey.substring(0, 5));
-    } else {
-      console.log('ERRO: Chave de API (PERFECTCORP_API_KEY) não encontrada!');
+    // --- NOVO: Verificação mais detalhada das chaves ---
+    if (!apiKey) {
+      // Devolvemos um erro específico se a chave de API estiver em falta
+      return res.status(500).json({ error: 'ERRO NO SERVIDOR: A variável de ambiente PERFECTCORP_API_KEY não foi encontrada.' });
     }
-    if (publicKey) {
-      console.log('Chave Pública (primeiros 20 caracteres):', publicKey.substring(0, 20));
-    } else {
-      console.log('ERRO: Chave Pública (PERFECTCORP_PUBLIC_KEY) não encontrada!');
-    }
-    console.log('--- FIM DA DEPURAÇÃO DE CHAVES ---');
-    // CUIDADO: É boa prática remover estes logs depois de resolver o problema.
-
-    if (!apiKey || !publicKey) {
-      console.error('ERRO: As chaves da PerfectCorp não estão configuradas no Vercel.');
-      return res.status(500).json({ error: 'As chaves da API não estão configuradas.' });
+    if (!publicKey) {
+      // Devolvemos um erro específico se a chave pública estiver em falta
+      return res.status(500).json({ error: 'ERRO NO SERVIDOR: A variável de ambiente PERFECTCORP_PUBLIC_KEY não foi encontrada.' });
     }
 
     const encrypt = new JSEncrypt();
@@ -48,11 +33,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const signature = encrypt.encrypt(dataToEncrypt);
 
     if (!signature) {
-      console.error('ERRO: Falha ao encriptar a assinatura.');
-      return res.status(500).json({ error: 'Falha no processo de encriptação.' });
+      return res.status(500).json({ error: 'Falha ao encriptar a assinatura. Verifique se a Chave Pública está correta.' });
     }
 
-    let accessToken;
     try {
       const authResponse = await axios.post(
         'https://yce-api-01.perfectcorp.com/v1.0/client/auth:1',
@@ -60,27 +43,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         { headers: { 'Content-Type': 'application/json' } }
       );
 
-      accessToken = authResponse.data.access_token;
+      const accessToken = authResponse.data.access_token;
       if (!accessToken) {
         throw new Error('Token de acesso não foi retornado pela API de autenticação.');
       }
-      console.log('Passo 1 concluído: Token de Acesso obtido com sucesso!');
+      
+      const finalResponse = {
+        success: true,
+        message: "Autenticação com a PerfectCorp bem-sucedida!",
+        analysisResult: { }
+      };
+      
+      return res.status(200).json(finalResponse);
 
     } catch (authError: any) {
-      console.error('ERRO no Passo 1 (Autenticação):', authError.response?.data || authError.message);
-      return res.status(401).json({ error: 'Falha na autenticação com a PerfectCorp.' });
+      // Agora, vamos devolver uma mensagem mais clara
+      return res.status(401).json({ error: 'Falha na autenticação com a PerfectCorp (Erro 401). Verifique se as chaves de API e Pública estão corretas na Vercel.' });
     }
-    
-    const finalResponse = {
-      success: true,
-      message: "Autenticação com a PerfectCorp bem-sucedida!",
-      analysisResult: { }
-    };
-    
-    res.status(200).json(finalResponse);
 
   } catch (error) {
-    console.error('Erro fatal na API analyze-skin:', error);
-    res.status(500).json({ error: 'Ocorreu um erro interno no servidor.' });
+    return res.status(500).json({ error: 'Ocorreu um erro fatal e inesperado na API.' });
   }
 }
