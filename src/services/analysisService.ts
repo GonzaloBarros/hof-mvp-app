@@ -22,7 +22,9 @@ const generateIdToken = (): string | null => {
   
   try {
     const timestamp = new Date().getTime();
-    const payload = `client_id=${CLIENT_ID}&timestamp=${timestamp}`;
+    // --- AQUI ESTÁ A CORREÇÃO CRÍTICA ---
+    // A API espera a etiqueta "api_key" no payload da assinatura, e não "client_id".
+    const payload = `api_key=${CLIENT_ID}&timestamp=${timestamp}`;
     
     // Criamos a assinatura usando a chave secreta.
     const signature = HmacSHA256(payload, CLIENT_SECRET);
@@ -51,6 +53,7 @@ const authenticate = async (): Promise<string> => {
   }
   
   try {
+    // Para este fluxo, o corpo do pedido espera 'client_id'
     const response = await axios.post(`${API_BASE_URL}/s2s/v1.0/client/auth`, {
       client_id: CLIENT_ID,
       id_token: id_token,
