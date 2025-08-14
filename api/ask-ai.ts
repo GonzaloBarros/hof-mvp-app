@@ -53,7 +53,8 @@ Baseado EXCLUSIVAMENTE nos dados do relatório fornecido, responda de forma estr
 
     // 5. Inicializar a IA e enviar o pedido
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    // CORREÇÃO: O modelo foi alterado de 'gemini-pro' para a versão mais recente
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro-1.5-flash-latest' });
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
