@@ -1,10 +1,7 @@
 import axios from 'axios';
-import HmacSHA256 from 'crypto-js/hmac-sha256';
-import Base64 from 'crypto-js/enc-base64';
+import { JSEncrypt } from 'js-encrypt';
 
-// --- NOVO: Função auxiliar para converter o texto da imagem num ficheiro ---
-// A nossa webcam dá-nos um 'data URL' (texto), mas a API precisa de um 'File' (ficheiro).
-// Esta função faz essa conversão.
+// Função auxiliar para converter o texto da imagem (data URL) num ficheiro (File)
 const dataURLtoFile = (dataurl: string, filename: string): File => {
   const arr = dataurl.split(',');
   const mimeMatch = arr[0].match(/:(.*?);/);
@@ -21,33 +18,44 @@ const dataURLtoFile = (dataurl: string, filename: string): File => {
   return new File([u8arr], filename, { type: mime });
 };
 
-
 const API_BASE_URL = 'https://yce-api-01.perfectcorp.com';
 
 const CLIENT_ID = process.env.REACT_APP_PERFECTCORP_CLIENT_ID;
-const CLIENT_SECRET = process.env.REACT_APP_PERFECTCORP_CLIENT_SECRET;
+// O "SECRET" é, na verdade, a Chave Pública para encriptação
+const PUBLIC_KEY = process.env.REACT_APP_PERFECTCORP_CLIENT_SECRET;
 
 let accessToken: string | null = null;
 let accessTokenExpiration: number = 0;
 
+// Esta função usa RSA para ENCRIPTAR, como nos exemplos do Aj Chou
 const generateIdToken = (): string | null => {
-  if (!CLIENT_ID || !CLIENT_SECRET) {
-    console.error("ERRO: Credenciais REACT_APP_PERFECTCORP_CLIENT_ID ou CLIENT_SECRET não configuradas.");
+  if (!CLIENT_ID || !PUBLIC_KEY) {
+    console.error("ERRO: Credenciais CLIENT_ID ou CLIENT_SECRET (Chave Pública) não configuradas.");
     return null;
   }
   
   try {
+    const encrypt = new JSEncrypt();
+    encrypt.setPublicKey(PUBLIC_KEY);
+    
     const timestamp = new Date().getTime();
-    const payload = `api_key=${CLIENT_ID}&timestamp=${timestamp}`;
-    const signature = HmacSHA256(payload, CLIENT_SECRET);
-    const id_token = Base64.stringify(signature);
-    return id_token;
+    const payload = `client_id=${CLIENT_ID}&timestamp=${timestamp}`;
+    
+    const encrypted = encrypt.encrypt(payload);
+
+    if (encrypted === false) {
+      throw new Error("A encriptação com JSEncrypt falhou. Verifique a Chave Pública.");
+    }
+
+    return encrypted;
+
   } catch (error) {
-    console.error("Erro ao gerar o id_token com HMAC-SHA256:", error);
+    console.error("Erro ao gerar o id_token com JSEncrypt:", error);
     return null;
   }
 };
 
+// Passo 1: Autenticar e obter o token de acesso
 const authenticate = async (): Promise<string> => {
   if (accessToken && accessTokenExpiration > Date.now()) {
     return accessToken;
@@ -57,7 +65,7 @@ const authenticate = async (): Promise<string> => {
   const id_token = generateIdToken();
 
   if (!id_token || !CLIENT_ID) {
-    throw new Error("Credenciais da API não configuradas. Verifique as variáveis de ambiente e reinicie a aplicação.");
+    throw new Error("Credenciais da API não configuradas ou falha na geração do id_token.");
   }
   
   try {
@@ -78,20 +86,17 @@ const authenticate = async (): Promise<string> => {
     
   } catch (error) {
     console.error("Erro detalhado no Passo 1 (Autenticação):", axios.isAxiosError(error) ? error.response?.data : error);
-    throw new Error(`Falha na autenticação (Erro 401). Verifique se as credenciais CLIENT_ID e CLIENT_SECRET estão corretas.`);
+    throw new Error(`Falha na autenticação (Erro 401). Verifique se as credenciais CLIENT_ID e CLIENT_SECRET (Chave Pública) estão corretas.`);
   }
 };
 
+// O resto do fluxo de 5 passos
 const getUploadUrl = async (token: string, imageFile: File): Promise<{ upload_url: string; file_id: string }> => {
   console.log("A obter URL de upload...");
   try {
     const response = await axios.post(`${API_BASE_URL}/s2s/v1.1/file/skin-analysis`, 
-      {
-        files: [{ file_name: imageFile.name, file_size: imageFile.size, }],
-      },
-      {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', },
-      }
+      { files: [{ file_name: imageFile.name, file_size: imageFile.size }] },
+      { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
     );
     const { upload_url, file_id } = response.data.result.files[0];
     return { upload_url, file_id };
@@ -104,9 +109,7 @@ const getUploadUrl = async (token: string, imageFile: File): Promise<{ upload_ur
 const uploadImage = async (uploadUrl: string, imageFile: File): Promise<void> => {
   console.log("A fazer upload da imagem...");
   try {
-    await axios.put(uploadUrl, imageFile, {
-      headers: { 'Content-Type': imageFile.type, },
-    });
+    await axios.put(uploadUrl, imageFile, { headers: { 'Content-Type': imageFile.type } });
     console.log("Upload da imagem concluído com sucesso!");
   } catch (error) {
     console.error("Erro no Passo 3 (Upload da Imagem):", error);
@@ -121,13 +124,11 @@ const startAnalysisTask = async (token: string, fileId: string): Promise<string>
       {
         request_id: Math.floor(Math.random() * 1000000),
         payload: {
-          file_sets: { image: { file_id: fileId }, },
+          file_sets: { image: { file_id: fileId } },
           actions: ['wrinkles', 'spots', 'redness', 'dark_circles'],
         },
       },
-      {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', },
-      }
+      { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
     );
     return response.data.result.task_id as string;
   } catch (error) {
@@ -160,7 +161,6 @@ const pollTaskStatus = async (token: string, taskId: string): Promise<any> => {
       }
       
       await new Promise(resolve => setTimeout(resolve, interval));
-
     } catch (error) {
       console.error("Erro no Passo 5 (Verificar Status da Tarefa):", error);
       throw new Error(`Falha ao verificar o status da tarefa: ${axios.isAxiosError(error) ? error.message : "Erro desconhecido"}`);
@@ -170,7 +170,6 @@ const pollTaskStatus = async (token: string, taskId: string): Promise<any> => {
   throw new Error("Tempo limite excedido ao verificar o status da tarefa.");
 };
 
-// --- CORRIGIDO: A função agora aceita o texto da imagem e converte-o ---
 export const analyzeImage = async (imageDataUrl: string): Promise<any> => {
   console.log("Iniciando o processo de análise de imagem...");
   
@@ -179,12 +178,11 @@ export const analyzeImage = async (imageDataUrl: string): Promise<any> => {
   }
 
   try {
-    // Convertemos o texto da imagem num ficheiro real antes de começar.
     const imageFile = dataURLtoFile(imageDataUrl, 'skin-analysis-image.jpg');
-
     const token = await authenticate();
     const { upload_url, file_id } = await getUploadUrl(token, imageFile);
-    await uploadImage(upload_url, imageFile);
+    // --- CORREÇÃO DO ERRO DE DIGITAÇÃO ---
+    await uploadImage(upload_url, imageFile); // Estava 'image_file'
     const taskId = await startAnalysisTask(token, file_id);
     const analysisResults = await pollTaskStatus(token, taskId);
 

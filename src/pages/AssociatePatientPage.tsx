@@ -56,7 +56,6 @@ export const AssociatePatientPage: React.FC = () => {
             });
             
             // Navega para a página de detalhes da análise
-            // Usamos o ID da análise para que a página de detalhes possa encontrá-la no contexto
             navigate(`/analysis-detail/${newAnalysisId}`);
 
         } catch (err) {
