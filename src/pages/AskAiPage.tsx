@@ -1,21 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Send } from 'lucide-react';
-import axios from 'axios'; // Importamos o axios para fazer a chamada ao nosso backend
+import axios from 'axios';
 
-// Define um tipo para os nossos objectos de mensagem
+// Define a estrutura de um objeto de mensagem
 interface Message {
   text: string;
   sender: 'user' | 'ai';
 }
 
-// Dados de análise de exemplo. No futuro, vamos buscar isto da base de dados.
+// Dados de análise de exemplo. No futuro, isto virá da base de dados.
 const mockAnalysisData = {
   wrinkles: { forehead: 0.85, eye_corner: 0.75 },
   spots: { uv_spots: 0.72, dark_spots: 0.65 },
   texture: { pores: 0.88, smoothness: 0.5 },
   redness: 0.4,
 };
+
+// --- NOVO: LISTA DE PALAVRAS-CHAVE PARA DESTACAR ---
+// Adicionamos uma lista de palavras que queremos que tenham uma cor diferente.
+const KEYWORDS = [
+  'rugas', 'manchas', 'acne', 'flacidez', 'hidratação', 'poros',
+  'vermelhidão', 'oleosidade', 'textura', 'firmeza', 'proteção solar'
+];
 
 export const AskAiPage: React.FC = () => {
   const { analysisId } = useParams<{ analysisId: string }>();
@@ -31,7 +38,6 @@ export const AskAiPage: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Função para enviar uma mensagem
   const handleSendMessage = async () => {
     if (input.trim() === '' || isLoading) return;
 
@@ -41,22 +47,19 @@ export const AskAiPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // 1. FAZER A CHAMADA PARA O NOSSO BACKEND
-      // O Vercel entende que '/api/ask-ai' aponta para o ficheiro 'api/ask-ai.ts'.
       const response = await axios.post('/api/ask-ai', {
         question: userMessage.text,
-        analysisData: mockAnalysisData, // Enviamos a pergunta e os dados da análise
+        analysisData: mockAnalysisData,
       });
 
-      // 2. OBTER A RESPOSTA REAL DA IA
+      // A API que criámos devolve um campo chamado 'response'
       const aiResponse: Message = {
-        text: response.data.answer,
+        text: response.data.response, 
         sender: 'ai'
       };
       setMessages(prev => [...prev, aiResponse]);
 
     } catch (error) {
-      // 3. LIDAR COM ERROS
       console.error('Erro ao comunicar com a IA:', error);
       const errorMessage: Message = {
         text: 'Desculpe, ocorreu um erro ao tentar comunicar com o assistente. Por favor, tente novamente mais tarde.',
@@ -64,9 +67,28 @@ export const AskAiPage: React.FC = () => {
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
-      // 4. GARANTIR QUE O INDICADOR DE 'PENSANDO...' DESAPARECE
       setIsLoading(false);
     }
+  };
+
+  // --- NOVO: FUNÇÃO PARA RENDERIZAR O TEXTO COM DESTAQUE ---
+  // Esta função verifica cada palavra da mensagem. Se for uma palavra-chave,
+  // ela aplica um estilo diferente (cinzento escuro e negrito).
+  const renderMessageContent = (text: string) => {
+    // Criamos uma expressão regular que encontra qualquer uma das nossas palavras-chave
+    const parts = text.split(new RegExp(`(${KEYWORDS.join('|')})`, 'gi'));
+    
+    return parts.map((part, index) =>
+      KEYWORDS.includes(part.toLowerCase()) ? (
+        // Se a parte do texto for uma palavra-chave, aplicamos a cor correta
+        <span key={index} className="text-gray-700 font-semibold">
+          {part}
+        </span>
+      ) : (
+        // Caso contrário, mostramos o texto normalmente
+        part
+      )
+    );
   };
 
   return (
@@ -88,7 +110,9 @@ export const AskAiPage: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold flex-shrink-0">IA</div>
               )}
               <div className={`p-4 rounded-lg max-w-lg ${msg.sender === 'user' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700'}`}>
-                <p>{msg.text}</p>
+                {/* --- MUDANÇA: USAMOS A NOVA FUNÇÃO AQUI --- */}
+                {/* Em vez de mostrar o texto diretamente, passamos pela nossa função de renderização */}
+                <p>{renderMessageContent(msg.text)}</p>
               </div>
             </div>
           ))}
