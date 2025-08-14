@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
 import { useAnalyses } from '../context/AnalysisContext';
 import { useImage } from '../context/ImageContext';
@@ -46,8 +46,9 @@ export const AssociatePatientPage: React.FC = () => {
             // Removemos a conversão de volta para um ficheiro.
             const analysisResult = await analyzeImage(imageDataUrl);
 
+            const newAnalysisId = `analise_${new Date().getTime()}`;
             addAnalysis({
-                id: `analise_${new Date().getTime()}`,
+                id: newAnalysisId,
                 patientId: selectedPatientId,
                 imageUrl: imageDataUrl,
                 createdAt: new Date().toISOString(),
@@ -56,7 +57,7 @@ export const AssociatePatientPage: React.FC = () => {
             
             // Navega para a página de detalhes da análise
             // Usamos o ID da análise para que a página de detalhes possa encontrá-la no contexto
-            navigate(`/analysis-detail/${`analise_${new Date().getTime()}`}`);
+            navigate(`/analysis-detail/${newAnalysisId}`);
 
         } catch (err) {
             setError(`Falha ao analisar a imagem: ${err instanceof Error ? err.message : "Erro desconhecido"}`);
