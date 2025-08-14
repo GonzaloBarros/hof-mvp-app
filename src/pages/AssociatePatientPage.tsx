@@ -43,7 +43,7 @@ export const AssociatePatientPage: React.FC = () => {
         try {
             // --- AQUI ESTÁ A CORREÇÃO ---
             // A nossa função `analyzeImage` agora espera o `imageDataUrl` (string) diretamente.
-            // Removemos a conversão de volta para um ficheiro.
+            // A conversão para ficheiro foi removida.
             const analysisResult = await analyzeImage(imageDataUrl);
 
             const newAnalysisId = `analise_${new Date().getTime()}`;
@@ -56,7 +56,6 @@ export const AssociatePatientPage: React.FC = () => {
             });
             
             // Navega para a página de detalhes da análise
-            // Usamos o ID da análise para que a página de detalhes possa encontrá-la no contexto
             navigate(`/analysis-detail/${newAnalysisId}`);
 
         } catch (err) {
