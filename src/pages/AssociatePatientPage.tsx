@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
 import { useAnalyses } from '../context/AnalysisContext';
-import { useImage } from '../context/ImageContext'; // Adicionado: importação do ImageContext
+import { useImage } from '../context/ImageContext';
 import { analyzeImage } from '../services/analysisService';
 import { Link } from 'react-router-dom';
 
@@ -14,18 +14,9 @@ const SpinnerIcon = () => (
     </svg>
 );
 
-const blobToFile = (theBlob: Blob, fileName: string): File => {
-  const b: any = theBlob;
-  b.lastModifiedDate = new Date();
-  b.name = fileName;
-  return theBlob as File;
-}
-
 export const AssociatePatientPage: React.FC = () => {
     const navigate = useNavigate();
-    // CORRIGIDO: A imagem agora é obtida do ImageContext
     const { imageData: imageDataUrl } = useImage();
-
     const { patients } = usePatients();
     const { addAnalysis } = useAnalyses();
 
@@ -42,7 +33,7 @@ export const AssociatePatientPage: React.FC = () => {
 
     const handleAnalyze = async () => {
         if (!selectedPatientId || !imageDataUrl) {
-            setError("Por favor, selecione um paciente e forneça uma imagem para análise.");
+            setError("Por favor, selecione um paciente e certifique-se de que há uma imagem.");
             return;
         }
 
@@ -50,15 +41,11 @@ export const AssociatePatientPage: React.FC = () => {
         setError(null);
 
         try {
-            // Converte a imagem base64 de volta para um ficheiro para a API
-            const fetchRes = await fetch(imageDataUrl);
-            const imageBlob = await fetchRes.blob();
-            const imageFile = blobToFile(imageBlob, 'analysis.jpeg');
+            // --- AQUI ESTÁ A CORREÇÃO ---
+            // A nossa função `analyzeImage` agora espera o `imageDataUrl` (string) diretamente.
+            // Removemos a conversão de volta para um ficheiro.
+            const analysisResult = await analyzeImage(imageDataUrl);
 
-            // Chama o serviço de análise
-            const analysisResult = await analyzeImage(imageFile);
-
-            // Se a análise for bem-sucedida, salva os dados no contexto
             addAnalysis({
                 id: `analise_${new Date().getTime()}`,
                 patientId: selectedPatientId,
@@ -66,9 +53,11 @@ export const AssociatePatientPage: React.FC = () => {
                 createdAt: new Date().toISOString(),
                 data: analysisResult,
             });
-
+            
             // Navega para a página de detalhes da análise
-            navigate('/analysis-detail', { state: { result: analysisResult } });
+            // Usamos o ID da análise para que a página de detalhes possa encontrá-la no contexto
+            navigate(`/analysis-detail/${`analise_${new Date().getTime()}`}`);
+
         } catch (err) {
             setError(`Falha ao analisar a imagem: ${err instanceof Error ? err.message : "Erro desconhecido"}`);
         } finally {
@@ -80,7 +69,7 @@ export const AssociatePatientPage: React.FC = () => {
         return (
             <div className="p-8 text-center text-gray-500">
                 <h2 className="text-xl font-bold mb-4">Erro: Imagem não encontrada</h2>
-                <p>Por favor, volte e capture ou carregue uma imagem para a análise.</p>
+                <p>Por favor, volte e capture uma imagem para a análise.</p>
                 <Link to="/capture-flow" className="mt-4 inline-block px-6 py-3 bg-[#00C4B4] text-white rounded-lg font-semibold">
                     Voltar para a câmara
                 </Link>
