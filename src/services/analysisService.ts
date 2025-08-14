@@ -60,13 +60,18 @@ const authenticate = async (): Promise<string> => {
     });
 
     const newAccessToken = response.data.result.access_token;
-    if (!newAccessToken) {
-        throw new Error("A resposta da API de autenticação não continha um access_token.");
+    
+    // --- CORREÇÃO DO ERRO DE BUILD ---
+    // Verificamos se o token recebido é realmente um texto antes de o usarmos.
+    if (typeof newAccessToken !== 'string' || newAccessToken.length === 0) {
+        throw new Error("A resposta da API de autenticação não continha um access_token válido.");
     }
+
     accessToken = newAccessToken;
     accessTokenExpiration = Date.now() + 3600 * 1000; // Validade de 1 hora
     console.log("Token de acesso obtido com sucesso!");
     return accessToken;
+    
   } catch (error) {
     console.error("Erro detalhado no Passo 1 (Autenticação):", axios.isAxiosError(error) ? error.response?.data : error);
     throw new Error(`Falha na autenticação (Erro 401). Verifique se as credenciais CLIENT_ID e CLIENT_SECRET estão corretas.`);
