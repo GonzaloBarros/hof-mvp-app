@@ -1,60 +1,61 @@
+// Importa as ferramentas necessárias do Vercel para a nossa API
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+// Importa a ferramenta do Google para usar a IA do Gemini
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'A chave da API do Gemini não está configurada no servidor.' });
-  }
-
+// Esta é a função principal da nossa API, que será executada sempre que for chamada
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Usamos um bloco "try...catch" para tentar executar o código.
+  // Se algo der errado, o "catch" captura o erro e nos informa.
   try {
-    const { question, analysisData } = req.body;
+    console.log('API /api/ask-ai foi chamada.'); // Um log para sabermos que a função começou
 
-    // ADIÇÃO: Verifica se a pergunta ou os dados de análise estão ausentes.
-    if (!question || !analysisData) {
-      return res.status(400).json({ error: 'A pergunta ou os dados da análise estão ausentes.' });
+    // Verifica se a chave da API do Gemini está configurada no Vercel
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('A chave GEMINI_API_KEY não foi encontrada.');
+      // Se a chave não existir, retorna um erro claro
+      return res.status(500).json({ error: 'Chave da API do Gemini não configurada.' });
     }
 
-    const prompt = `
-# PERSONA
-Você é um 'Assistente de Diagnóstico' especialista em harmonização orofacial e estética, auxiliando profissionais de saúde qualificados. Sua comunicação é técnica, precisa e segura.
+    // Pega a pergunta (question) e os dados da análise (analysisData) que o frontend enviou
+    const { question, analysisData } = req.body;
 
-# CONTEXTO
-Você está a analisar um relatório de pele de um(a) paciente. Os dados brutos da análise são os seguintes:
-${JSON.stringify(analysisData, null, 2)}
+    console.log('Pergunta recebida:', question); // Log para ver a pergunta
+    console.log('Dados da análise recebidos:', analysisData); // Log para ver os dados da análise
 
-# TAREFA
-Baseado EXCLUSIVAMENTE nos dados do relatório fornecido, responda de forma estruturada à seguinte pergunta feita pelo profissional:
-"${question}"
+    // Verifica se a pergunta ou os dados da análise estão vazios
+    if (!question || !analysisData) {
+      console.error('Pergunta ou dados da análise estão em falta.');
+      return res.status(400).json({ error: 'A pergunta e os dados da análise são obrigatórios.' });
+    }
 
-# REGRAS E LIMITAÇÕES
-- NÃO faça diagnósticos médicos finais. A sua função é de suporte à decisão.
-- NÃO prescreva medicamentos.
-- As suas sugestões devem focar-se em procedimentos estéticos (ex: microagulhamento, peelings, toxina botulínica) e protocolos de skincare.
-- Sempre inicie as suas sugestões com frases como "Considerando os dados, algumas opções que podem ser exploradas são..."
-- Se a pergunta for fora do âmbito dos dados fornecidos, responda educadamente que só pode discutir os resultados desta análise de pele.
-- Responda em português do Brasil.
-`;
+    // Inicializa a IA do Google com a nossa chave de API
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    // Escolhe o modelo de IA que vamos usar
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    // CORREÇÃO: O nome do modelo foi corrigido para a versão mais recente.
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro-1.5-flash-latest' });
-    
+    // Monta o prompt (a instrução) que vamos enviar para a IA
+    const prompt = `Com base nos seguintes dados de análise de pele: ${JSON.stringify(
+      analysisData
+    )}. Responda à seguinte pergunta: ${question}`;
+
+    console.log('Enviando o seguinte prompt para o Gemini:', prompt); // Log para ver o prompt final
+
+    // Gera o conteúdo com base no nosso prompt
     const result = await model.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
     const text = response.text();
 
-    res.status(200).json({ answer: text });
+    console.log('Resposta recebida do Gemini:', text); // Log para ver a resposta da IA
+
+    // Envia a resposta da IA de volta para o nosso frontend com sucesso
+    res.status(200).json({ response: text });
 
   } catch (error) {
-    console.error('Erro ao chamar a API do Gemini:', error);
-    res.status(500).json({ error: 'Ocorreu um erro ao comunicar com o assistente de IA.' });
+    // Se qualquer coisa no bloco "try" falhar, o código vem para aqui
+    console.error('Ocorreu um erro fatal na API:', error); // Log detalhado do erro
+
+    // Devolve uma mensagem de erro genérica para o frontend, mas o log detalhado fica guardado na Vercel
+    res.status(500).json({ error: 'Ocorreu um erro interno no servidor.' });
   }
 }
