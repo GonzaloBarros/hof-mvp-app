@@ -17,8 +17,9 @@ export default async function handler(
   try {
     const { question, analysisData } = req.body;
 
-    if (!question) {
-      return res.status(400).json({ error: 'A pergunta é obrigatória.' });
+    // ADIÇÃO: Verifica se a pergunta ou os dados de análise estão ausentes.
+    if (!question || !analysisData) {
+      return res.status(400).json({ error: 'A pergunta ou os dados da análise estão ausentes.' });
     }
 
     const prompt = `
