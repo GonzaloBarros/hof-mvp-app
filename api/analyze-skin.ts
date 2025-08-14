@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
-// --- CORREÇÃO: Mudámos a forma de importar a biblioteca ---
 import { JSEncrypt } from 'js-encrypt';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -17,18 +16,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Nenhum dado de imagem fornecido.' });
     }
     
-    // --- PASSO 1: Obter o Token de Acesso ---
     console.log('Iniciando o Passo 1: Autenticação com a PerfectCorp...');
 
     const apiKey = process.env.PERFECTCORP_API_KEY;
     const publicKey = process.env.PERFECTCORP_PUBLIC_KEY;
 
+    // --- NOVO: Bloco de Depuração para Verificar as Chaves ---
+    // Este bloco vai mostrar um pedaço das chaves nos logs da Vercel para podermos confirmar.
+    console.log('--- INÍCIO DA DEPURAÇÃO DE CHAVES ---');
+    if (apiKey) {
+      console.log('Chave de API (primeiros 5 caracteres):', apiKey.substring(0, 5));
+    } else {
+      console.log('ERRO: Chave de API (PERFECTCORP_API_KEY) não encontrada!');
+    }
+    if (publicKey) {
+      console.log('Chave Pública (primeiros 20 caracteres):', publicKey.substring(0, 20));
+    } else {
+      console.log('ERRO: Chave Pública (PERFECTCORP_PUBLIC_KEY) não encontrada!');
+    }
+    console.log('--- FIM DA DEPURAÇÃO DE CHAVES ---');
+    // CUIDADO: É boa prática remover estes logs depois de resolver o problema.
+
     if (!apiKey || !publicKey) {
-      console.error('ERRO: Chaves da PerfectCorp não encontradas no Vercel.');
+      console.error('ERRO: As chaves da PerfectCorp não estão configuradas no Vercel.');
       return res.status(500).json({ error: 'As chaves da API não estão configuradas.' });
     }
 
-    // A linha abaixo agora funciona por causa da correção na importação
     const encrypt = new JSEncrypt();
     encrypt.setPublicKey(publicKey);
     const dataToEncrypt = `${apiKey}:${Date.now()}`;
@@ -41,7 +54,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let accessToken;
     try {
-      // Usamos a assinatura encriptada para pedir um token de acesso.
       const authResponse = await axios.post(
         'https://yce-api-01.perfectcorp.com/v1.0/client/auth:1',
         { signature: signature },
@@ -56,27 +68,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     } catch (authError: any) {
       console.error('ERRO no Passo 1 (Autenticação):', authError.response?.data || authError.message);
-      // Retornamos o erro 401 que vimos, pois a autenticação falhou.
       return res.status(401).json({ error: 'Falha na autenticação com a PerfectCorp.' });
     }
     
-    // --- PASSO 2: Usar o Token de Acesso para a Análise (Ainda simulado) ---
-    /*
-    console.log('Iniciando Passo 2: Enviando imagem para análise...');
-    const analysisResponse = await axios.post(
-      'https://URL_REAL_DA_ANALISE/api/v1/endpoint', // Substituir pelo URL correto
-      { image_base64: imageData },
-      { headers: { 'Authorization': `Bearer ${accessToken}` } }
-    );
-    */
-
-    // Por enquanto, vamos apenas confirmar que a autenticação funcionou.
     const finalResponse = {
       success: true,
       message: "Autenticação com a PerfectCorp bem-sucedida!",
-      analysisResult: {
-        // os dados da análise viriam aqui
-      }
+      analysisResult: { }
     };
     
     res.status(200).json(finalResponse);
