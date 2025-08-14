@@ -17,13 +17,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const apiKey = process.env.PERFECTCORP_API_KEY;
     const publicKey = process.env.PERFECTCORP_PUBLIC_KEY;
 
-    // --- NOVO: Verificação mais detalhada das chaves ---
     if (!apiKey) {
-      // Devolvemos um erro específico se a chave de API estiver em falta
       return res.status(500).json({ error: 'ERRO NO SERVIDOR: A variável de ambiente PERFECTCORP_API_KEY não foi encontrada.' });
     }
     if (!publicKey) {
-      // Devolvemos um erro específico se a chave pública estiver em falta
       return res.status(500).json({ error: 'ERRO NO SERVIDOR: A variável de ambiente PERFECTCORP_PUBLIC_KEY não foi encontrada.' });
     }
 
@@ -37,8 +34,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+      // --- CORREÇÃO: Usando o URL correto da documentação PHP ---
       const authResponse = await axios.post(
-        'https://yce-api-01.perfectcorp.com/v1.0/client/auth:1',
+        'https://yce-api-01.perfectcorp.com/api/v1/client/auth:1',
         { signature: signature },
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -57,7 +55,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(finalResponse);
 
     } catch (authError: any) {
-      // Agora, vamos devolver uma mensagem mais clara
       return res.status(401).json({ error: 'Falha na autenticação com a PerfectCorp (Erro 401). Verifique se as chaves de API e Pública estão corretas na Vercel.' });
     }
 
